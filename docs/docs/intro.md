@@ -8,6 +8,6 @@ To implement GreenLeaze you must ask for an API key. You can do this by contacti
 You can test the API key by using the following request :
 
 ```bash
-curl -X GET "https://api.greenleaze.com/v1/health" -H "accept: application/json
-authorization: api-x-key YOUR_API_KEY"
+curl -X GET "https://api.greenleaze.com/" -H "accept: application/json \
+--header 'X-API-KEY: ••••••'
 ```

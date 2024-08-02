@@ -8,7 +8,7 @@ const config: Config = {
   favicon: "img/favicon.ico",
 
   // Set the production url of your site here
-  url: "https://www.docs.greenleaze.com",
+  url: "https://docs.greenleaze.com",
   // Set the /<baseUrl>/ pathname under which your site is served
   // For GitHub pages deployment, it is often '/<projectName>/'
   baseUrl: "/",
@@ -50,7 +50,7 @@ const config: Config = {
 
   themeConfig: {
     // Replace with your project's social card
-    image: "img/docusaurus-social-card.jpg",
+    image: "img/greenleaze-social-card.jpg",
     navbar: {
       title: "",
       logo: {
@@ -62,7 +62,7 @@ const config: Config = {
           type: "docSidebar",
           sidebarId: "tutorialSidebar",
           position: "left",
-          label: "Tutorial",
+          label: "Documentation",
         },
       ],
     },
@@ -73,8 +73,16 @@ const config: Config = {
           title: "Docs",
           items: [
             {
-              label: "Tutorial",
-              to: "/docs/intro",
+              label: "API",
+              to: "/docs/category/implement-with-api",
+            },
+            {
+              label: "Shopify",
+              to: "docs/category/implement-with-shopify",
+            },
+            {
+              label: "PrestaShop",
+              to: "docs/category/implement-with-prestashop",
             },
           ],
         },

@@ -1,7 +1,5 @@
 {
   "label": "Implement with Shopify",
   "position": 3,
-  "link": {
-    "type": "generated-index"
-  }
+  "collapsible": true
 }

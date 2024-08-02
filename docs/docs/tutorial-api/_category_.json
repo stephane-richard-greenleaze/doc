@@ -1,8 +1,5 @@
 {
-  "label": "Implement with API",
+  "label": "Implement with the API",
   "position": 2,
-  "link": {
-    "type": "generated-index",
-    "description": "Easy implementation with API"
-  }
+  "collapsible": false
 }
