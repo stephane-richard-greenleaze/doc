@@ -74,15 +74,15 @@ const config: Config = {
           items: [
             {
               label: "API",
-              to: "/docs/category/implement-with-api",
+              to: "docs/api-implement",
             },
             {
               label: "Shopify",
-              to: "docs/category/implement-with-shopify",
+              to: "docs/tutorial-shopify/soon",
             },
             {
               label: "PrestaShop",
-              to: "docs/category/implement-with-prestashop",
+              to: "docs/tutorial-prestashop/soon",
             },
           ],
         },
