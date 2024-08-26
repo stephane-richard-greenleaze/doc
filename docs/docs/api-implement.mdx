@@ -27,7 +27,7 @@ All requests to the API must be authenticated with an API key. The API key must 
 <details>
 <summary>
 ```
-GET https://api.greenleaze.com/api/v1/pricing-rules
+GET https://api.greenleaze.com/api/price_rules
 ```
 </summary>
 ```json title="Request response"
@@ -36,9 +36,9 @@ GET https://api.greenleaze.com/api/v1/pricing-rules
   {
     "id": 30,
     "name": "0 2000 1 mois",
-    "rule": "(1.2* [[prixHT]] /11.9) + (1.2-[[rate]])*[[prixHT]]/11.9", // [[rate]] represent the taxes of the product (tva)
-    "minPrice": "0.00",
-    "maxPrice": "2000.00",
+    "rule": "(1.2* [[prixHT]] /11.9) + (1.2-[[tva]])*[[prixHT]]/11.9", // [[tva]] represent the taxes of the product
+    "minPrice": "0.00", // This is the price without taxes !
+    "maxPrice": "2000.00", // This is the price without taxes !
     "duration": 6 // Can be 6, 12, 18 or 24 months
   }
   //...
@@ -117,7 +117,7 @@ It is necessary to provide both a delivery address and an invoice address. In th
 ```json title="Product format"
 {
   "name": "", // (String, Required) : Name of the product.
-  "unitPrice": 0, // (Integer, Required) : Unit price of the product.
+  "unitPrice": 0, // (Integer, Required) : Unit price of the product. Without taxes !
   "vat": 0, // (Integer, Required) : VAT applicable on the product.
   "quantity": 0, // (Integer, Required) : Quantity ordered of the product.
   "combination": {
@@ -134,8 +134,9 @@ It is necessary to provide both a delivery address and an invoice address. In th
 Once the order has been sent to GreenLeaze, you must redirect the customer to the GreenLeaze payment page, the previous request will return the URL to redirect the customer.
 You must redirect the customer to the URL returned by the previous request.
 
-`POST https://pay.greenleaze.com/order/step-1?transaction_id={transactionId}`
+`POST https://pay.greenleaze.com/order/step-1?transaction_id={transactionId}&duration={duration}`
 Be sure to replace `{transactionId}` by the transactionId you have sent in the previous request.
+The `duration` parameter is the duration of the rental in months, it is optional but ables to preselect the duration on the GreenLeaze payment page.
 
 ### Step 3 : Send back the order id to GreenLeaze
 
@@ -149,4 +150,4 @@ Four parameters will be added to the (success) URL :
 
 ## Ressources
 
-Here is a JSON file exemple for step 2 : [download ](./file/exemple.json)
+Here is a JSON file exemple for step 2 : [download](./file/exemple.json)
