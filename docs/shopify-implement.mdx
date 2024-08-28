@@ -15,16 +15,39 @@ The integration is done in 3 steps :
 
 This step is done by GreenLeaze. Please contact us to install the custom app on your shopify store.
 
+## Add Greenleaze assets files
+
+On your Shopify store, you need to add the following svg files (content > files):
+
+- [logo-greenleaze-fond-blanc](../static/img/logo-greenleaze-fond-blanc.svg) ;
+- [logo-greenleaze-fond-vert](../static/img/logo-greenleaze-fond-vert.svg) ;
+- [logo-greenleaze-slider](../static/img/logo-greenleaze-slider.svg) ;
+- [progress-bar-greenleaze](../static/img/progress-bar-greenleaze.svg) ;
+
+Respect the name of the files or you will have to edit the code to match the new names.
+
+## Add Product Metafields
+
+You need to add the following custom metafields to your store :
+
+- Go to your Shopify admin, click on Content then on MetaObjects ;
+- Click on "Add a definition" then "Personalized data" and "products" then "Add a definition" ;
+- Fill the form with the following values :
+  - "Disable GreenLeaze for this product" ;
+  - greenleaze.disabled ;
+  - "Disable GreenLeaze for this product" ;
+  - Type : True or False.
+
 ## Customizing your store theme
 
 We recommand display the GreenLeaze widget on the product page and the cart page, the widget will allow your customers to choose the duration of the rental and see the monthly price.
 
 ### Display the GreenLeaze widget on the product page
 
-1. Create a new snippet `greenleaze-abbonnement-product.liquid`, it will hold a first button GreenLeaze and a modal to display the prices.
+1. Create a new snippet `greenleaze-abonnement-product.liquid`, it will hold a first button GreenLeaze and a modal to display the prices.
    The following code must be customized to fit your store design.
 
-[Download greenleaze-abbonnement-product.liquid ](./file/greenleaze-abbonnement-product.liquid)
+[Download greenleaze-abonnement-product.liquid ](./file/greenleaze-abonnement-product.liquid)
 
 You may need to edit the data-price attribute to correctly get the price of the product
 for your store.
@@ -68,9 +91,9 @@ data-value="4"
 
 ### Display the GreenLeaze widget on the cart page
 
-1. Create a new snippet `greenleaze-abbonnement-cart.liquid`, it will hold a GreenLeaze button and a modal to display the prices of each product in the cart. The following code must be customized to fit your store design.
+1. Create a new snippet `greenleaze-abonnement-cart.liquid`, it will hold a GreenLeaze button and a modal to display the prices of each product in the cart. The following code must be customized to fit your store design.
 
-[Download greenleaze-abbonnement-product.liquid ](./file/greenleaze-abbonnement-cart.liquid)
+[Download greenleaze-abonnement-product.liquid ](./file/greenleaze-abonnement-cart.liquid)
 
 You may need to edit the same values as for the product widget.
 

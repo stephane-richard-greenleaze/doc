@@ -1,0 +1,622 @@
+<link href="https://fonts.cdnfonts.com/css/baloo" rel="stylesheet">
+
+<div>
+    <div style="margin: 1rem 0">
+      <button id="btn-abonnement" class="button-abonnement open-modal-abonnement" data-value="4"  role="button">
+         <img class="ml-007" src="{{ 'logo-greenleaze-fond-vert.svg' | file_url }}" width="100px" height="auto"/>
+      </button>
+    </div>
+</div>
+
+<div id="modal-abonnement" class="modal modal-abonnement" style="z-index:99999999">
+    <div class="modal-content-abonnement">
+       <button id="close-modal" type="button" class="btn-close-modal">&times;</button>
+        <div class="modalContainer" style="display: flex;gap: 30px;padding: 40px;">
+            <div class="left">
+                <h3 class="title-modal">La consommation circulaire avec <span style="color: #0D5537">GreenLeaze</span></h3>
+                <div class="text-modal">
+                    <img src="{{ 'progress-bar-greenleaze.svg' | file_url }}" alt="progress bar" width="auto" height="100%" style="margin-right: 20px">
+                    <div style="margin-top:14px;">
+                        <div style="font-size:14px;">Choisissez la durée de votre abonnement</div>
+                        <div style="margin-top: 40px;font-size:14px;">Payez le 1er mois et validez votre abonnement
+                            en 3 clics
+                        </div>
+                        <div style="margin-top: 30px;font-size:14px;">Profitez de la garantie incluse et de la flexibilité de votre
+                            abonnement !
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <img class="ml-5 mt-3" src="{{ 'logo-greenleaze-fond-blanc.svg' | file_url }}" alt="greenleaze logo" width="200" height="auto">
+                </div>
+            </div>
+            <div class="right">
+                <div class="slider-container">
+                    <input type="range" id="monthSlider" min="0" max="4" step="1" value="0">
+                    <div class="slider-labels">
+                         <span>1 mois</span>
+                        <span>12 mois</span>
+                        <span>18 mois</span>
+                        <span>24 mois</span>
+                        <span>36 mois</span>
+                    </div>
+
+                </div>
+                <div class="abo-title">
+                    Votre abonnement
+                </div>
+              <div class="table">
+                    <div class="alignement">
+                        <div id="paiementMensuelLabelContainer" class="lines">
+                          <span>Paiement mensuel</span>
+
+                        </div>
+                        <div id="paiementMensuelPriceContainer" class="lines">
+                          <span id="paiementMensuel"></span>
+                        </div>
+                        
+                    </div>
+                    <div class="alignement">
+                      <div id="apportInitialLabelContainer" class="lines" >
+                        <span>Apport initial</span>
+                      </div>
+                      <div id="apportInitialPriceContainer" class="lines">
+                        <span id="apportInitial"></span>
+                      </div>
+                    </div>
+                    <hr style="margin-top: 20px;margin-bottom:20px;border: 1px solid black;">
+                    <div class="alignement">
+                        <span>A payer aujourd'hui</span>
+                        <span id="paidToday"></span>
+                    </div>
+                </div>
+                <div style="margin:auto;text-align:center">
+                    <button class="buttonOrder" onclick="order()">Commander</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<style>
+.button-abonnement {
+  align-items: center;
+  appearance: none;
+  background-color: #0D5537;
+  border-radius: 24px;
+  border-style: none;
+  box-sizing: border-box;
+  color: #fff;
+  cursor: pointer;
+  display: inline-flex;
+  fill: currentcolor;
+  font-family: "Google Sans",Roboto,Arial,sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  height: 100%;
+  justify-content: center;
+  letter-spacing: .25px;
+  line-height: normal;
+  max-width: 100%;
+  overflow: visible;
+  padding: 17px 20px;
+  position: relative;
+  text-align: center;
+  text-transform: none;
+  transition: box-shadow 280ms cubic-bezier(.4, 0, .2, 1),opacity 15ms linear 30ms,transform 270ms cubic-bezier(0, 0, .2, 1) 0ms;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  width: 100%;
+  will-change: transform,opacity;
+  z-index: 0;
+}
+
+  .ml-007 {
+    margin-left: 0.7em;
+  }
+
+  .ml-5 {
+    margin-left: 5em;
+  }
+
+  .mt-2 {
+    margin-top: 2em;
+  }
+
+  .mt-3 {
+    margin-top: 3.5em;
+  }
+  
+    .left {
+        width: 50%;
+    }
+
+    .right {
+        width: 50%;
+    }
+
+    .buttonOrder {
+        border-radius: 10px;
+        background: #0D5537;
+        font-size: 23px;
+        letter-spacing: 1px;
+        color: white;
+        border: 0;
+        padding-top: 10px;
+        padding-bottom: 10px;
+        padding-left: 20px;
+        padding-right: 20px;
+        margin-top: 40px;
+        cursor: pointer;
+        font-style: normal;
+        font-weight: 600;
+        line-height: normal;
+    }
+
+    .modal {
+        display: none; /* Hidden by default */
+        position: fixed; /* Stay in place */
+        z-index: 1; /* Sit on top */
+        left: 0;
+        top: 0;
+        width: 100%; /* Full width */
+        height: 100%; /* Full height */
+        overflow: auto; /* Enable scroll if needed */
+        background-color: rgb(0, 0, 0); /* Fallback color */
+        background-color: rgba(0, 0, 0, 0.4); /* Black w/ opacity */
+          padding: 20px; /* Ajout d'un padding pour éviter que le contenu touche les bords */
+
+    }
+
+    .modal-content-abonnement {
+        background-color: #fff; /* White background */
+        margin: 5vh auto; /* 10% from the top and centered */
+        padding: 20px; /* Padding inside the modal box */
+        border: 1px solid #888; /* Gray border */
+        width: 80%; /* Adjust based on screen size */
+        max-width: 800px; /* Maximum width set to 500px */
+        border-radius: 20px;
+        max-height: 90vh; /* Limite la hauteur de la modal à 90% de la hauteur de l'écran */
+    overflow-y: auto; /* Ajoute un défilement si le contenu dépasse la hauteur maximale */
+    position: relative; /* Pour le positionnement absolu du bouton de fermeture */
+
+    }
+
+     .btn-close-modal {
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    color: #aaa;
+    border: none;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+    .btn-close-modal:hover,
+    .btn-close-modal:focus {
+        color: black;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .slider-container {
+        width: 300px; /* Match or exceed the width of the slider */
+        text-align: center; /* Center the slider within the container */
+    }
+
+    #monthSlider {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 100%;
+        height: 10px;
+        background: transparent;
+        background-color: #D0E6E5;
+        border-radius: 20px;
+        outline: none;
+        transition: opacity .2s;
+    }
+
+    #monthSlider:hover {
+        opacity: 1;
+    }
+
+    #monthSlider::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 25px;
+        height: 25px;
+        background: #0D5537 url({{ 'logo-greenleaze-slider.svg' | file_url }}) no-repeat center;
+        cursor: pointer;
+        border-radius: 50%;
+        background-size: 60%;
+        color: white;
+        font-size: 16px;
+        text-align: center;
+        line-height: 25px;
+    }
+
+    #monthSlider::-moz-range-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 25px;
+        height: 25px;
+        background: #0D5537 url({{ 'logo-greenleaze-slider.svg' | file_url }}) no-repeat center;
+        cursor: pointer;
+        border-radius: 50%;
+        background-size: 60%;
+        color: white;
+        font-size: 16px;
+        text-align: center;
+        line-height: 25px;
+    }
+
+    #sliderValue {
+        margin-top: 20px;
+        font-size: 20px;
+        color: #333;
+    }
+
+    .slider-labels {
+        font-weight: 400;
+        font-size: 13px;
+        line-height: 15.6px;
+        display: flex;
+        justify-content: space-between;
+        padding: 10px 0;
+    }
+
+    .slider-labels span {
+        color: #000;
+        font-size: 13px;
+        font-style: normal;
+        font-weight: 400;
+        line-height: normal;
+
+    }
+
+    .text-modal {
+        display: flex;
+    }
+
+    .abo-title {
+        font-size: 23px;
+        font-weight: 700;
+        line-height: 27.6px;
+        text-align: center;
+        margin-top: 47px;
+    }
+
+    .title-modal {
+        font-size: 23px;
+        font-weight: 900;
+        line-height: 27.6px;
+        text-align: left;
+        margin-top: 0;
+
+    }
+
+    .table {
+        margin-top: 20px;
+        font-size: 20px;
+        font-weight: 400;
+        line-height: 36.2px
+    }
+
+ .alignement {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  .alignement .lines:first-child {
+      text-align: left;
+  }
+  
+  .alignement .lines:last-child {
+      text-align: right;
+  }
+  .alignement .lines .detail {
+    display:flex; 
+    flex-direction: column;
+    justify-content: end;
+   
+  }
+
+  .detail {
+    font-size: 12px;
+    line-height: 14px;
+  }
+
+
+    @media screen and (max-width: 1200px) {
+        .title-modal {
+            font-size: 17px;
+            text-align: center !important;
+        }
+
+        .abo-title {
+            margin-top: 10px !important;
+            font-size: 20px;
+        }
+
+        .table {
+            font-family: inherit!important;
+            font-size: 16px!important;
+            font-weight: 100!important;
+        }
+        .modalContainer {
+            display: block !important;
+            padding: 0 !important;
+        }
+
+        .text-modal {
+            display: none !important;
+        }
+
+        .left {
+            margin: auto !important;
+            width: 100% !important;
+        }
+
+        .left img {
+            display: none !important;
+        }
+
+        .right {
+            margin: auto !important;
+            width: 100% !important;
+        }
+
+        .right .slider-container {
+            width: 100% !important;
+        }
+    }
+
+</style>
+<script type="text/javascript">
+
+    document.getElementById("close-modal").addEventListener("click", function() {
+        document.getElementById("modal-abonnement").style.display = "none";
+    });
+
+	const monthValues = [1, 12, 18, 24, 36];
+    let rawrules = {};
+    let parsedRulesByProducts = {};
+    let priceShipping = 0
+    /* Spectific object to get all infos once and be able to use them easly, all price are TTC (rules are already parsed), price must be multiplied by quantity
+    The total is the sum of all products for given duration
+    No approximations in numbers to avoid addition of roundups
+    {prod1: {
+        rules: {
+          duration1: 10.00
+          duration2: 32.00
+        },
+        name: "X",
+        quantity: 1
+      },
+     prod2: {
+        rules: {
+          duration1: 10.00
+          duration2: 12.00
+        },
+        name: "Y",
+        quantity: 1
+      },
+      ...
+    }
+    */
+	document.addEventListener('DOMContentLoaded', async function () {
+         const rulesFetch = await fetch("/apps/greenleaze-proxy/pricing", {
+  			method: "GET",
+  			headers: {
+  				'ngrok-skip-browser-warning': 'true',
+  				"Content-Type": "application/json",
+  				'Access-Control-Allow-Origin': '*',
+  			},
+  		});
+        rawrules = await rulesFetch.json();
+		generateParsedRulesByProductsObject();
+        const slider = document.getElementById('monthSlider');
+  		if (slider) {
+  			slider.addEventListener('input', async function () {
+    			const selectedMonth = monthValues[slider.value];
+  				fetchPriceModal(selectedMonth)
+
+  			});
+  		}
+
+	});
+
+	function parseRule(rule, values) {
+		return new Function('return ' + rule.replace(/\[\[(\w+)\]\]/g, (_, key) => values[key]));
+    }
+    
+    function getRuleByProductPriceAndDuration(productPrice, duration = 36) {
+              const priceRules = rawrules['hydra:member'];
+              productPriceFormat = parseFloat(productPrice)
+              const rule = priceRules.find(priceRule => 
+                priceRule.duration == duration && priceRule.minPrice <= productPriceFormat && priceRule.maxPrice >= productPriceFormat
+              )
+              console.log("wf", priceRules, productPriceFormat, duration, rule) 
+              return rule ? rule.rule : "0"
+      }
+    async function generateParsedRulesByProductsObject() {
+      const cartContentsRes = await fetch(window.Shopify.routes.root + 'cart.js');
+      const cartContents = await cartContentsRes.json();
+      const items = cartContents.items
+      console.log("cart", cartContents)
+      if(items.length === 0) {
+        console.error("No product in cart")
+        return
+      }
+      const formated = {}
+      items.forEach((item) => {
+        let rules = {}
+        const prixHT = item.final_price / 100 * 5 / 6;
+        const tva = 120/100
+        monthValues.forEach((duration) => {
+          rules['' + duration] = parseRule(getRuleByProductPriceAndDuration(prixHT, duration), {tva, prixHT, duration})();
+        })
+        formated[item.variant_id] = {
+          rules,
+          name: item.product_title || item.title,
+          quantity: item.quantity
+        }
+      })
+
+      rawrules = formated
+      setGeneralPriceButton()
+      fetchPriceModal()
+      console.log("formated", rawrules)
+    }
+
+    async function getCartPriceAndRules() {
+        console.log("Getting price HT")
+        const cartContentsRes = await fetch(window.Shopify.routes.root + 'cart.js');
+      	const cartContents = await cartContentsRes.json();
+        return cartContents && cartContents?.items ? parseFloat((cartContents.total_price / 100) * 5 / 6).toFixed(2) : 0;
+      }
+
+    function setGeneralPriceButton() {
+      document.querySelector('#btn-abonnement').innerHTML = `${calculateSumTotalPrice().toFixed(0)} € / mois <img class="ml-007" src="{{ 'logo-greenleaze-fond-vert.svg' | file_url }}" width="100px" height="auto"/>`
+    }
+
+    function calculateSumTotalPrice(duration = '36') {
+      let total = 0
+      Object.keys(rawrules).forEach((productId) => {
+        total += rawrules[productId].rules[duration] * rawrules[productId].quantity
+      })
+      return total
+    }
+
+    async function getShippingCost() {
+        const shopDomain = "{{ shop.domain }}";
+    		const fraisLivraisonResponse = await fetch("/apps/greenleaze-proxy/price-shipping", {
+    			method: "POST",
+    			headers: {
+    				"Content-Type": "application/json",
+    				'Access-Control-Allow-Origin': '*',
+    			},
+    			body: JSON.stringify({
+    				"shop": shopDomain
+    			}),
+    		});
+    		const fraisLivraisonData = await fraisLivraisonResponse.json();
+        return fraisLivraisonData.deliveryFee;
+    }
+  
+    async function fetchPriceModal(monthDuration = '36') {
+      let monthlyPaiement = calculateSumTotalPrice(monthDuration)
+      const shippingCost = await getShippingCost()
+      let initialApp = monthlyPaiement + shippingCost
+      let paidToday = monthlyPaiement + initialApp
+      console.log(monthlyPaiement, shippingCost, initialApp, paidToday)
+      document.getElementById('paiementMensuel').innerText = monthlyPaiement.toFixed(2) + ' €';
+      document.getElementById('apportInitial').innerText = initialApp.toFixed(2) + ' €';
+      document.getElementById('paidToday').innerText = paidToday.toFixed(2) + ' €';
+      const paiementMensuelLabelContainer = document.getElementById('paiementMensuelLabelContainer')
+      const paiementMensuelPriceContainer = document.getElementById('paiementMensuelPriceContainer')
+      const apportInitialLabelContainer = document.getElementById('apportInitialLabelContainer')
+      const apportInitialPriceContainer = document.getElementById('apportInitialPriceContainer')
+      Object.keys(rawrules).forEach((productId) => {
+        const product = rawrules[productId]
+        const total = product.rules[monthDuration] * product.quantity
+        setDetailText(paiementMensuelLabelContainer, productId, `${product.name} x ${product.quantity}`);
+        setDetailText(paiementMensuelPriceContainer, productId, `${total.toFixed(2)} €`);
+        setDetailText(apportInitialLabelContainer, productId, `${product.name} x ${product.quantity}`);
+        setDetailText(apportInitialPriceContainer, productId, `${(total + (shippingCost / Object.keys(rawrules).length)).toFixed(2)} €`);
+
+        
+      })
+      
+  	}
+
+      function setDetailText(container, dataKey, newText) {
+        // Find the span with the class 'detail' within the container
+        let detailSpan = container.querySelector(`.detail[data-key="${dataKey}"]`);
+    
+        if (detailSpan) {
+            // If the span exists, replace its text
+            detailSpan.textContent = newText;
+        } else {
+            // If the span doesn't exist, create a new span and append it
+            const newDetailSpan = document.createElement('span');
+            newDetailSpan.className = 'detail';
+            newDetailSpan.textContent = newText;
+            newDetailSpan.setAttribute('data-key', dataKey);
+            container.appendChild(newDetailSpan);
+        }
+    }
+    
+
+
+  
+	async function order() {
+        console.log('order')
+		var cartContentsRes = await fetch(window.Shopify.routes.root + 'cart.js');
+		const cartContents = await cartContentsRes.json();
+		if (cartContents.items.length === 0) {
+			alert("Veuillez ajouter un produit au panier");
+			return; // Exit the function if the cart is empty
+		}
+		const shopDomain = "{{ shop.domain }}";
+        console.log('send-card')
+		let ack = await fetch("/apps/greenleaze-proxy/send-card", {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+				'Access-Control-Allow-Origin': '*',
+			},
+			body: JSON.stringify({
+				"cartContents": JSON.stringify(cartContents),
+				"shop": shopDomain
+			}),
+		});
+        if(ack.ok)
+          {
+            const slider = document.getElementById('monthSlider');
+            ack = await ack.json();
+            window.location.href = ack?.redirectUrl + '&duration=' + monthValues[slider.value];
+          } else {
+            console.error('error during saved cart');
+          }
+	}
+
+    // Open the modal by clicking on any button with the class
+    document.querySelectorAll('.open-modal-abonnement').forEach(button => {
+  			button.addEventListener('click', function () {
+  				const value = this.getAttribute('data-value');
+  				if (!value) {
+  					console.error('No data-value attribute found.');
+  				}
+  				document.getElementById('monthSlider').value = value;
+  
+  				const modal = document.querySelector('.modal-abonnement');
+              
+  				modal.style.display = 'block';
+  				document.body.appendChild(modal);
+
+  
+  
+  			});
+  		});
+	// Close the modal by clicking on the close button
+	document.querySelector('.close-modal').addEventListener('click', () => {
+		document.querySelector('.modal-abonnement').style.display = 'none';
+	});
+
+
+	// Close the modal if the user clicks outside of it
+	window.onclick = function (event) {
+		var modal = document.querySelector('.modal-abonnement');
+		// Check if the click was outside the modal content
+		if (event.target == modal) {
+			modal.style.display = 'none';
+		}
+	};
+    
+
+
+</script>

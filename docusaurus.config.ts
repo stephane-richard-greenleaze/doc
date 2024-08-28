@@ -78,7 +78,7 @@ const config: Config = {
             },
             {
               label: "Shopify",
-              to: "docs/tutorial-shopify/soon",
+              to: "docs/shopify-implement",
             },
             {
               label: "PrestaShop",
