@@ -1,0 +1,81 @@
+---
+sidebar_position: 3
+sidebar_label: Implement with Shopify
+---
+
+# Shopify
+
+Greenleaze provides a custom shopify app so you can easily integrate GreenLeaze into your shopify store.
+The integration is done in 3 steps :
+
+- Install the custom app GreenLeaze on your shopify store ;
+- Customize your store theme to display the greenleaze widget the way you want.
+
+## Install the custom app GreenLeaze on your shopify store
+
+This step is done by GreenLeaze. Please contact us to install the custom app on your shopify store.
+
+## Customizing your store theme
+
+We recommand display the GreenLeaze widget on the product page and the cart page, the widget will allow your customers to choose the duration of the rental and see the monthly price.
+
+### Display the GreenLeaze widget on the product page
+
+1. Create a new snippet `greenleaze-abbonnement-product.liquid`, it will hold a first button GreenLeaze and a modal to display the prices.
+   The following code must be customized to fit your store design.
+
+[Download greenleaze-abbonnement-product.liquid ](./file/greenleaze-abbonnement-product.liquid)
+
+You may need to edit the data-price attribute to correctly get the price of the product
+for your store.
+
+You may also need to edit the durations for the modal, the following code is an example for 1, 12, 18 and 24 and 36 months. You have to adapt the following lines to edit them :
+
+```html
+<div class="slider-container">
+  <input type="range" id="monthSlider" min="0" max="4" step="1" value="0" />
+  <div class="slider-labels">
+    <span>1 mois</span>
+    <span>12 mois</span>
+    <span>18 mois</span>
+    <span>24 mois</span>
+    <span>36 mois</span>
+  </div>
+</div>
+```
+
+Here you must edit the values of the span to match the duration of the rental you want to display but also the "max" value of the input range (here 4 because we have 5 durations).
+
+```javascript
+const monthValues = [1, 12, 18, 24, 36];
+const defaultDuration = "36";
+```
+
+Here you must edit the values of the array to match the duration of the rental you want to display and the default duration you want to display when the modal is opened.
+
+Finally, you must edit the following line to match the lenght of the monthValues array minus one (here 4 because we have 5 durations) :
+
+```javascript
+data-value="4"
+```
+
+2.  Import the snippet in your product template `product.liquid` or file
+    where you want to display the widget
+
+```liquid
+{% render 'greenleaze-abonnement-product' %}
+```
+
+### Display the GreenLeaze widget on the cart page
+
+1. Create a new snippet `greenleaze-abbonnement-cart.liquid`, it will hold a GreenLeaze button and a modal to display the prices of each product in the cart. The following code must be customized to fit your store design.
+
+[Download greenleaze-abbonnement-product.liquid ](./file/greenleaze-abbonnement-cart.liquid)
+
+You may need to edit the same values as for the product widget.
+
+2. Import the snippet in your cart template `main-cart.liquid` or file where you want to display the widget
+
+```liquid
+{% render 'greenleaze-abonnement-cart' %}
+```
