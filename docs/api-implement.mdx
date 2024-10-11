@@ -27,7 +27,7 @@ All requests to the API must be authenticated with an API key. The API key must 
 <details>
 <summary>
 ```
-GET https://api.greenleaze.com/api/price_rules
+GET https://new.api.greenleaze.com/api/price-rules
 ```
 </summary>
 ```json title="Request response"
@@ -84,6 +84,9 @@ POST https://pay.greenleaze.com/send-shop-order-data
     "lastName": "", // (String, Optional) : Customer's lastname.
     "company": "", // (String, Optional) : Society of client, can be null.
     "email": "", // (String, Optional) : Email of the customer.
+    "deliveryOptions": [
+       // ...
+    ], // (Array, Optional) : List of delivery options - See below for the delivery option format.
     "addresses": [
       // ... 
     ], // (Array, Optional) : Address of the customer - See below for the address format.
@@ -123,9 +126,21 @@ It is necessary to provide both a delivery address and an invoice address. In th
   "combination": {
     "name": "" // (String, Required) : Description of the combination. If single product without declination put the product name.
   },
-  "imageUrl": "" // (String, Required) : URL of the product image.
+  "imageUrl": "", // (String, Required) : URL of the product image.
+  "disabled": false // (Boolean, Required) : Indicates if the product is disabled for GreenLeaze Renting, if true the product will be payed in one time on GreenLeaze.
 }
 ```
+
+```json title="Delivery option format"
+{
+  "id": "", // (String, Required) : Id of the delivery option.
+  "name": "", // (String, Required) : Name of the delivery option.
+  "price": 0, // (Integer, Required) : Price of the delivery option.
+  "description": "" // (String, optional) : Description of the delivery option.
+}
+```
+
+Note : The delivery options are optional but allows you to display the delivery options on the GreenLeaze payment page, GreenLeaze will only store the final delivery price.
 
 </details>
 
@@ -141,12 +156,14 @@ The `duration` parameter is the duration of the rental in months, it is optional
 ### Step 3 : Send back the order id to GreenLeaze
 
 Once the customer has completed the payment, he will be redirected to the (success) URL you have provided in the request to create the order.
-Four parameters will be added to the (success) URL :
+A post request will be sent to the (success) URL with the following parameters :
 
 - `number-of-months` : Indicates the duration of the rental in months. This information allows you to define the appropriate status for the order on your shop, such as "GreenLeaze Rent 24 months".
 - `cart-secure-key` : Unique identifier of the cart or order, which you will have included in the JSON data sent. This identifier, which is unknown to the customer, must match exactly the one recorded on your shop to avoid fraudulent validation of the order. In case of divergence between the cart-secure-key sent and the one received, the order should not be validated.
 - `cart-id` : Used to validate the order with reference to the cart ID.
 - `greenleaze-subscription-id` : This identifier will be necessary to communicate to the API the order number generated on your shop. **Use the endpoint `/api/subscriptions/{id}` with the PATCH method to update the order `shopOrderId`.**
+
+then the customer will be redirected on the same Url (GET request with no parameters except the greenleaze-subscription-id)
 
 ## Ressources
 

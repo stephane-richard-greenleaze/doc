@@ -1,0 +1,59 @@
+<script src="{{ 'greenleaze-script.js' | asset_url }}" async></script>
+
+
+{% comment %}
+Used in : snippets/product-collection
+
+
+{% endcomment %}
+
+{% if product.metafields.greenleaze.disabled != true %}
+    <div class="previewPricePerMonth" data-price="{{price}}" data-duration="36" data-value="3" data-type="cart" id="id-{{ product.selected_or_first_available_variant.id }}">
+    </div>          
+  
+{% endif %}
+
+ <script type="text/javascript">
+       window.addEventListener(
+          "greenleazePriceActualize",
+          (e) => {
+              setGreenleazePrice{{ product.selected_or_first_available_variant.id }}()
+          }
+      );
+
+      console.log("LOADED {{ product.title }}")
+      function setGreenleazePrice{{ product.selected_or_first_available_variant.id }}() {
+        if(!initPrice) return
+         const prixHT = {{price}} / 100 * 5/6
+          const id = {{ product.selected_or_first_available_variant.id }}
+         console.log("PRICE", prixHT, id)
+        const container = document.querySelector(`.previewPricePerMonth#id-${id}`);
+        console.log(container)
+        if(container) {
+          const tva = 120 / 100
+           const calculatePayment = parseRule(getRuleByProductPriceAndDuration(prixHT), {tva, prixHT});
+          const paiementMensuel = calculatePayment(); 
+          container.innerHTML = `${paiementMensuel} € / mois`
+          }
+        
+     }
+  
+
+
+      setGreenleazePrice{{ product.selected_or_first_available_variant.id }}()
+      
+    
+  
+</script>
+<style>
+  .greenleaze-button-product {
+    margin-top: 10px;
+    background-color: #0D5537;
+    border-color: #0D5537;
+    margin-bottom: 0px;
+  }
+  .greenleaze-button-product:hover {
+    background-color: #0c402b;
+    border-color: #0c402b;
+  }
+</style>
