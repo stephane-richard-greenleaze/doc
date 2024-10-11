@@ -36,13 +36,17 @@ GET https://new.api.greenleaze.com/api/price-rules
   {
     "id": 30,
     "name": "0 2000 1 mois",
-    "rule": "(1.2* [[prixHT]] /11.9) + (1.2-[[tva]])*[[prixHT]]/11.9", // [[tva]] represent the taxes of the product
+    "rule": "(1.2* [[prixHT]] /11.9) + (1.2-[[tva]])*[[prixHT]]/11.9", // [[tva]] represent the taxes of the product - Used to calculate the monthly price
+    "depositRule": "(1.2* [[prixHT]] /11.9) + (1.2-[[tva]])*[[prixHT]]/11.9", // [[tva]] represent the taxes of the product - Used for first payment
+
     "minPrice": "0.00", // This is the price without taxes !
     "maxPrice": "2000.00", // This is the price without taxes !
     "duration": 6 // Can be 6, 12, 18 or 24 months
-  }
-  //...
+
+}
+//...
 ]
+
 ```
 </details>
 
@@ -65,8 +69,10 @@ Once your customer has made his order on your website, you must send the order t
 <details>
 <summary>
 ```
+
 POST https://pay.greenleaze.com/send-shop-order-data
-```
+
+````
 </summary>
 ```json title="Request body"
 [
@@ -74,7 +80,7 @@ POST https://pay.greenleaze.com/send-shop-order-data
   {
     "transactionId": "",// (String, Required) : Random generated id. Used by pay.greenleaze.com to associate all data to the transaction_id spectified in the redirection URL of the customer.
     "shop": "", //(Object, Required) : Shops informations.
-    "urls": [], //(Object, Required) : All shop's URL 
+    "urls": [], //(Object, Required) : All shop's URL  See below for the URL format.
     "shop": "", // (String, Required) :  principal URL of the shop, format domain.extension (ex: amazon.fr or fnac.com).
     "success": "", // (String, Required) : redirection URL in case of paiement success.
     "failure": "", // (String, Required) : redirection URL in case of paiement failure.
@@ -88,7 +94,7 @@ POST https://pay.greenleaze.com/send-shop-order-data
        // ...
     ], // (Array, Optional) : List of delivery options - See below for the delivery option format.
     "addresses": [
-      // ... 
+      // ...
     ], // (Array, Optional) : Address of the customer - See below for the address format.
     "products": [
       // ...
@@ -98,7 +104,7 @@ POST https://pay.greenleaze.com/send-shop-order-data
     "totalInitialFees": 0.00 // (Float, Required) : Initial fees : mainly delivery fees, but also assembly or file fees if any...
   }
 ]
-```
+````
 
 It is necessary to provide both a delivery address and an invoice address. In the case where they are the same, you must reverse the values of delivery and invoice by adjusting `true` and `false` respectively.
 
@@ -127,7 +133,8 @@ It is necessary to provide both a delivery address and an invoice address. In th
     "name": "" // (String, Required) : Description of the combination. If single product without declination put the product name.
   },
   "imageUrl": "", // (String, Required) : URL of the product image.
-  "disabled": false // (Boolean, Required) : Indicates if the product is disabled for GreenLeaze Renting, if true the product will be payed in one time on GreenLeaze.
+  "disabled": false, // (Boolean, Required) : Indicates if the product is disabled for GreenLeaze Renting, if true the product will be payed in one time on GreenLeaze.
+  "id": "" // (String, Optional) : Id of the product, will be used to delete One unit of the product from the recap of the order.
 }
 ```
 
@@ -137,6 +144,15 @@ It is necessary to provide both a delivery address and an invoice address. In th
   "name": "", // (String, Required) : Name of the delivery option.
   "price": 0, // (Integer, Required) : Price of the delivery option.
   "description": "" // (String, optional) : Description of the delivery option.
+}
+```
+
+```json title="Urls format"
+{
+  "failure": "", // (String, Required) : Url where the customer will be redirected in case of payment failure.
+  "success": "", // (String, Required) : Url called with POST in case of success and where the user is redirected after
+  "sendData": "", // (String, Optional) : Url called with PATCH (with the json data) to send the customer data before the end of the payment process.
+  "deleteProduct": "" // (String, optional) : Url call with PATCH (with the json data) to delete one unit of a the product with the id specified in the product format. You must specify the id of the product in the product format to use it.
 }
 ```
 
