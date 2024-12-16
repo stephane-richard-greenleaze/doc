@@ -27,7 +27,7 @@ All requests to the API must be authenticated with an API key. The API key must 
 <details>
 <summary>
 ```
-GET https://new.api.greenleaze.com/api/price-rules
+GET https://new.api.greenleaze.com/v1/price-rules
 ```
 </summary>
 ```json title="Request response"
@@ -38,11 +38,9 @@ GET https://new.api.greenleaze.com/api/price-rules
     "name": "0 2000 1 mois",
     "rule": "(1.2* [[prixHT]] /11.9) + (1.2-[[tva]])*[[prixHT]]/11.9", // [[tva]] represent the taxes of the product - Used to calculate the monthly price
     "depositRule": "(1.2* [[prixHT]] /11.9) + (1.2-[[tva]])*[[prixHT]]/11.9", // [[tva]] represent the taxes of the product - Used for first payment
-
     "minPrice": "0.00", // This is the price without taxes !
     "maxPrice": "2000.00", // This is the price without taxes !
-    "duration": 6 // Can be 6, 12, 18 or 24 months
-
+    "duration": 6 // Can be 1, 6, 12, 18 or 24 months depending on the contract with GreenLeaze
 }
 //...
 ]
@@ -79,17 +77,9 @@ POST https://pay.greenleaze.com/send-shop-order-data
   //...
   {
     "transactionId": "",// (String, Required) : Random generated id. Used by pay.greenleaze.com to associate all data to the transaction_id spectified in the redirection URL of the customer.
-    "shop": "", //(Object, Required) : Shops informations.
     "urls": [], //(Object, Required) : All shop's URL  See below for the URL format.
-    "shop": "", // (String, Required) :  principal URL of the shop, format domain.extension (ex: amazon.fr or fnac.com).
-    "success": "", // (String, Required) : redirection URL in case of paiement success.
-    "failure": "", // (String, Required) : redirection URL in case of paiement failure.
-    "language": "", // (String, Required) : Langage used by the shop - iso format (ex: fr or en).
-    "customer": "", // (Object, Optional) : Info about the customer.
-    "firstName": "", // (String, Optional) : Customer's firstname.
-    "lastName": "", // (String, Optional) : Customer's lastname.
-    "company": "", // (String, Optional) : Society of client, can be null.
-    "email": "", // (String, Optional) : Email of the customer.
+    "language": "", // (String, Optional) : Langage used by the shop - iso format (ex: fr or en).
+    "customer": {}, // (Object, Optional) : Info about the customer. - See below for the customer format.
     "deliveryOptions": [
        // ...
     ], // (Array, Optional) : List of delivery options - See below for the delivery option format.
@@ -119,7 +109,8 @@ It is necessary to provide both a delivery address and an invoice address. In th
   "city": "", // (String, Required) : City of the address.
   "phone": "", // (String, Required) : Phone number associated with the address.
   "delivery": true, // (Boolean, Required) : Indicates if the address is for delivery.
-  "invoice": false // (Boolean, Required) : Indicates if the address is for billing.
+  "invoice": false, // (Boolean, Required) : Indicates if the address is for billing.
+  "description": "" // (String, Optional) : Description of the address.
 }
 ```
 
@@ -130,9 +121,9 @@ It is necessary to provide both a delivery address and an invoice address. In th
   "vat": 0, // (Integer, Required) : VAT applicable on the product.
   "quantity": 0, // (Integer, Required) : Quantity ordered of the product.
   "combination": {
-    "name": "" // (String, Required) : Description of the combination. If single product without declination put the product name.
+    "name": "" // (String, Optional) : Description of the combination. If single product without declination put the product name.
   },
-  "imageUrl": "", // (String, Required) : URL of the product image.
+  "imageUrl": "", // (String, Optional) : URL of the product image, must be a valid URL and accessible from the GreenLeaze server.
   "disabled": false, // (Boolean, Required) : Indicates if the product is disabled for GreenLeaze Renting, if true the product will be payed in one time on GreenLeaze.
   "id": "" // (String, Optional) : Id of the product, will be used to delete One unit of the product from the recap of the order.
 }
@@ -156,6 +147,15 @@ It is necessary to provide both a delivery address and an invoice address. In th
 }
 ```
 
+```json title="Customer format"
+{
+  "firstName": "", // (String, Required) : First name of the customer.
+  "lastName": "", // (String, Required) : Last name of the customer.
+  "email": "", // (String, Required) : Email of the customer.
+  "phone": "" // (String, Required) : Phone number of the customer.
+}
+```
+
 Note : The delivery options are optional but allows you to display the delivery options on the GreenLeaze payment page, GreenLeaze will only store the final delivery price.
 
 </details>
@@ -169,15 +169,14 @@ You must redirect the customer to the URL returned by the previous request.
 Be sure to replace `{transactionId}` by the transactionId you have sent in the previous request.
 The `duration` parameter is the duration of the rental in months, it is optional but ables to preselect the duration on the GreenLeaze payment page.
 
-### Step 3 : Send back the order id to GreenLeaze
+### Step 3 : Listen for the customer payment
 
 Once the customer has completed the payment, he will be redirected to the (success) URL you have provided in the request to create the order.
-A post request will be sent to the (success) URL with the following parameters :
+A post request will be sent to the (success) URL with the following parameters in the body :
 
 - `number-of-months` : Indicates the duration of the rental in months. This information allows you to define the appropriate status for the order on your shop, such as "GreenLeaze Rent 24 months".
 - `cart-secure-key` : Unique identifier of the cart or order, which you will have included in the JSON data sent. This identifier, which is unknown to the customer, must match exactly the one recorded on your shop to avoid fraudulent validation of the order. In case of divergence between the cart-secure-key sent and the one received, the order should not be validated.
 - `cart-id` : Used to validate the order with reference to the cart ID.
-- `greenleaze-subscription-id` : This identifier will be necessary to communicate to the API the order number generated on your shop. **Use the endpoint `/api/subscriptions/{id}` with the PATCH method to update the order `shopOrderId`.**
 
 then the customer will be redirected on the same Url (GET request with no parameters except the greenleaze-subscription-id)
 
