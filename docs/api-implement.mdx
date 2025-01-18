@@ -10,15 +10,15 @@ The REST API makes it able to retrieve prices rules from GreenLeaze, create an o
 ## How the GreenLeaze Payment Path Integration Works
 
 1. The store retrieves the pricing rules from GreenLeaze.
-2. The store displays the pricings to the custome in the way he wants to.
+2. The store displays the pricings to the customer in the way he wants to.
 3. The store sends a request containing data in JSON to GreenLeaze to create an order.
 4. The store redirects the customer to GreenLeaze to complete the order.
 5. GreenLeaze processes the order and sends the customer back to the store.
-6. The store sends a request to GreenLeaze to give the unique order id (id_commande) to finalize the order.
+6. GreenLeaze sends a webhook to the store to notify the new order status.
 
 ## API Authentication
 
-All requests to the API must be authenticated with an API key. The API key must be included in the `X-API-KEY` header of the request. This token is unique to your shop and must be kept secret.
+All requests to the API must be authenticated with an API key. The API key must be included in the `X-API-KEY` header of the request. This token is unique to your shop **and must be kept secret**.
 
 ## Pricing Rules
 
@@ -27,7 +27,7 @@ All requests to the API must be authenticated with an API key. The API key must 
 <details>
 <summary>
 ```
-GET https://new.api.greenleaze.com/v1/price-rules
+GET /v1/price-rules
 ```
 </summary>
 ```json title="Request response"
@@ -60,7 +60,7 @@ You can not change the pricing rules with the API. If you need to change the pri
 
 ## Send data to GreenLeaze
 
-### Step 1 : Send the order to pay.greenleaze.com
+### Step 1 : Send the order to GreenLeaze
 
 Once your customer has made his order on your website, you must send the order to GreenLeaze to create the order.
 
@@ -68,7 +68,7 @@ Once your customer has made his order on your website, you must send the order t
 <summary>
 ```
 
-POST https://pay.greenleaze.com/send-shop-order-data
+POST /v1/subscriptions/
 
 ````
 </summary>
@@ -76,42 +76,16 @@ POST https://pay.greenleaze.com/send-shop-order-data
 [
   //...
   {
-    "transactionId": "",// (String, Required) : Random generated id. Used by pay.greenleaze.com to associate all data to the transaction_id spectified in the redirection URL of the customer.
-    "urls": [], //(Object, Required) : All shop's URL  See below for the URL format.
-    "language": "", // (String, Optional) : Langage used by the shop - iso format (ex: fr or en).
-    "customer": {}, // (Object, Optional) : Info about the customer. - See below for the customer format.
-    "deliveryOptions": [
-       // ...
-    ], // (Array, Optional) : List of delivery options - See below for the delivery option format.
-    "addresses": [
-      // ...
-    ], // (Array, Optional) : Address of the customer - See below for the address format.
+    "transactionId": "",// (String, Required, 10 characters minimum) : Random generated id. Used by pay.greenleaze.com to associate all data to the transaction_id spectified in the redirection URL of the customer. Must be unique for each order. Please start the transactionId with the shop name to avoid collision.
+    "urls": {}, // (Object, Required) : All shop's URL  See below for the URL format.
     "products": [
       // ...
     ], // (Array, Required) : List of products ordered by the customer - See below for the product format.
     "cartId": "", // (String, Required) : Cart id.
     "cartSecureKey": "", // (String, Required) : Cart secure key.
-    "totalInitialFees": 0.00 // (Float, Required) : Initial fees : mainly delivery fees, but also assembly or file fees if any...
+    "totalInitialFees": 0.00 // (Float, Optional) : Initial fees : mainly delivery fees, will be overwritten by the delivery option price if any on the GreenLeaze dashboard.
   }
 ]
-````
-
-It is necessary to provide both a delivery address and an invoice address. In the case where they are the same, you must reverse the values of delivery and invoice by adjusting `true` and `false` respectively.
-
-```json title="Address format"
-{
-  "country": "", // (String, Required) : Country code of the address.
-  "company": "", // (String, Optional) : Company name (can be empty).
-  "firstName": "", // (String, Required) : First name associated with the address.
-  "lastName": "", // (String, Required) : Last name associated with the address.
-  "street": "", // (String, Required) : Street of the address.
-  "postCode": "", // (String, Required) : Postal code of the address.
-  "city": "", // (String, Required) : City of the address.
-  "phone": "", // (String, Required) : Phone number associated with the address.
-  "delivery": true, // (Boolean, Required) : Indicates if the address is for delivery.
-  "invoice": false, // (Boolean, Required) : Indicates if the address is for billing.
-  "description": "" // (String, Optional) : Description of the address.
-}
 ```
 
 ```json title="Product format"
@@ -119,7 +93,7 @@ It is necessary to provide both a delivery address and an invoice address. In th
   "name": "", // (String, Required) : Name of the product.
   "unitPrice": 0, // (Integer, Required) : Unit price of the product. Without taxes !
   "vat": 0, // (Integer, Required) : VAT applicable on the product.
-  "quantity": 0, // (Integer, Required) : Quantity ordered of the product.
+  "quantity": 1, // (Integer, Required) : Quantity ordered of the product.
   "combination": {
     "name": "" // (String, Optional) : Description of the combination. If single product without declination put the product name.
   },
@@ -129,16 +103,7 @@ It is necessary to provide both a delivery address and an invoice address. In th
 }
 ```
 
-```json title="Delivery option format"
-{
-  "id": "", // (String, Required) : Id of the delivery option.
-  "name": "", // (String, Required) : Name of the delivery option.
-  "price": 0, // (Integer, Required) : Price of the delivery option.
-  "description": "" // (String, optional) : Description of the delivery option.
-}
-```
-
-```json title="Urls format"
+```json title="Urls object format"
 {
   "failure": "", // (String, Required) : Url where the customer will be redirected in case of payment failure.
   "success": "", // (String, Required) : Url called with POST in case of success and where the user is redirected after
@@ -147,39 +112,70 @@ It is necessary to provide both a delivery address and an invoice address. In th
 }
 ```
 
-```json title="Customer format"
-{
-  "firstName": "", // (String, Required) : First name of the customer.
-  "lastName": "", // (String, Required) : Last name of the customer.
-  "email": "", // (String, Required) : Email of the customer.
-  "phone": "" // (String, Required) : Phone number of the customer.
-}
-```
-
-Note : The delivery options are optional but allows you to display the delivery options on the GreenLeaze payment page, GreenLeaze will only store the final delivery price.
-
 </details>
+
+Responses of the request :
+
+201 : The order has been created and you are able to redirect him to the payment page. The transactionId is returned in the response with greenleaze subscriptionId which can be stored (or not) in your database.
+
+401 : The provided API key is invalid.
+
+400 : The request is invalid. Check the format data sent.
 
 ### Step 2 : Redirect the customer to pay.greenleaze.com
 
 Once the order has been sent to GreenLeaze, you must redirect the customer to the GreenLeaze payment page, the previous request will return the URL to redirect the customer.
 You must redirect the customer to the URL returned by the previous request.
 
-`POST https://pay.greenleaze.com/order/step-1?transaction_id={transactionId}&duration={duration}`
+```
+https://pay.greenleaze.com/order/duration?transaction_id={transactionId}&duration={duration}&lang={language}
+```
+
 Be sure to replace `{transactionId}` by the transactionId you have sent in the previous request.
 The `duration` parameter is the duration of the rental in months, it is optional but ables to preselect the duration on the GreenLeaze payment page.
+The `lang` parameter is the language of the payment page, it is optional but ables to preselect the language on the GreenLeaze payment page. Available options are `fr`, `en` and `de`.
 
 ### Step 3 : Listen for the customer payment
 
 Once the customer has completed the payment, he will be redirected to the (success) URL you have provided in the request to create the order.
 A post request will be sent to the (success) URL with the following parameters in the body :
 
-- `number-of-months` : Indicates the duration of the rental in months. This information allows you to define the appropriate status for the order on your shop, such as "GreenLeaze Rent 24 months".
-- `cart-secure-key` : Unique identifier of the cart or order, which you will have included in the JSON data sent. This identifier, which is unknown to the customer, must match exactly the one recorded on your shop to avoid fraudulent validation of the order. In case of divergence between the cart-secure-key sent and the one received, the order should not be validated.
-- `cart-id` : Used to validate the order with reference to the cart ID.
+```json title="Urls object format"
+{
+          "cartId": "",
+          "cartSecureKey": "",
+          "email": "",
+          "firstName": "",
+          "lastName": "",
+          "deliveryAddress": {
+            "street": "",
+            "city": "",
+            "country": "",
+            "postCode": "",
+            "phone": "",
+            "firstName": "",
+            "lastName": "",
+          },
+          "invoiceAddress": {
+            "street": "",
+            "city": "",
+            "country": "",
+            "postCode": "",
+            "phone": "",
+            "firstName": "",
+            "lastName": "",
+          },
+          "greenleazeSubscriptionId": "",
+          "duration": 1,
+          "monthlyRentalPayment": 1,
+          "deliveryMode": {
+            "name": "",
+            "price": 1,
+            "tags": ""
+          }
+}
+```
+deliveryAddress may be null depending on the configuration set on the GreenLeaze dashboard.
 
-then the customer will be redirected on the same Url (GET request with no parameters except the greenleaze-subscription-id)
-
-## Ressources
-
-Here is a JSON file exemple for step 2 : [download](./file/exemple.json)
+Then the customer will be redirected on the same Url.
+````
