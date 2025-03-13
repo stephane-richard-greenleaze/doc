@@ -82,7 +82,7 @@ const config: Config = {
             },
             {
               label: "PrestaShop",
-              to: "docs/tutorial-prestashop/soon",
+              to: "docs/prestashop-implement",
             },
           ],
         },

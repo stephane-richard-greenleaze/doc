@@ -7,14 +7,33 @@ sidebar_label: Implement with the API
 
 The REST API makes it able to retrieve prices rules from GreenLeaze, create an order and then follow the order status.
 
+Last update : 18/02/2025
+
 ## How the GreenLeaze Payment Path Integration Works
 
 1. The store retrieves the pricing rules from GreenLeaze.
 2. The store displays the pricings to the customer in the way he wants to.
 3. The store sends a request containing data in JSON to GreenLeaze to create an order.
 4. The store redirects the customer to GreenLeaze to complete the order.
-5. GreenLeaze processes the order and sends the customer back to the store.
-6. GreenLeaze sends a webhook to the store to notify the new order status.
+5. Greenleaze sends webhooks with the informations filled by the customer during the payment process.
+6. GreenLeaze processes the order and sends the customer back to the store.
+   GreenLeaze sends a webhook to the store to notify the new order information.
+
+## API Urls
+
+All requests to the API must be made to the following URL :
+
+```
+https://new.api.greenleaze.com
+```
+
+A staging version is available at the following URL :
+
+```
+https://staging.api.greenleaze.com
+```
+
+Staging data is anonimized and regularly reset after each new release. You can request an access to the production and staging environment by contacting GreenLeaze.
 
 ## API Authentication
 
@@ -22,7 +41,7 @@ All requests to the API must be authenticated with an API key. The API key must 
 
 ## Pricing Rules
 
-### Get Pricing Rules
+### Step 1 : Get Pricing Rules
 
 <details>
 <summary>
@@ -50,40 +69,72 @@ GET /v1/price-rules
 
 The request returns all rules concerning your shop. A rule applies to all products whose price is between **minPrice** and **maxPrice** and for the corresponding duration.
 
-From all the rules you are able to let your customer choose his duration and the corresponding price will be calculated according to the rule. If the product is not in the range of any rule, the product is not egilageable for GreenLeaze Renting.
+From all the rules you are able to let your customer choose his duration and the corresponding price will be calculated according to the rule. If the product is not in the range of any rule, the product is not eligible for the GreenLeaze Subscription.
 
 **Please store the rules in user session to avoid multiple requests to the API. It will improve user experience for all customers.**
 
-### Change Pricing Rules
+### Step 2 : Display the pricings to the customer
 
-You can not change the pricing rules with the API. If you need to change the pricing rules, please contact us.
+You can easly display the pricing to the customer by using the differents rules you have received. You may calculate the price in front-end or back-end depending on your needs.
+We recommend to display the calculated price on :
+- The product page
+- The cart page
+- The checkout page
+- The product list page
+
 
 ## Send data to GreenLeaze
 
-### Step 1 : Send the order to GreenLeaze
+### Step 2 : Send the order to GreenLeaze
 
 Once your customer has made his order on your website, you must send the order to GreenLeaze to create the order.
+A simple POST request is used to send the order to GreenLeaze.
 
 <details>
 <summary>
 ```
 
-POST /v1/subscriptions/
+POST /v1/subscriptions/transaction
 
 ````
+
 </summary>
+
 ```json title="Request body"
 [
   //...
   {
-    "transactionId": "",// (String, Required, 10 characters minimum) : Random generated id. Used by pay.greenleaze.com to associate all data to the transaction_id spectified in the redirection URL of the customer. Must be unique for each order. Please start the transactionId with the shop name to avoid collision.
-    "urls": {}, // (Object, Required) : All shop's URL  See below for the URL format.
+    "transactionId": "",// (String, Required, 10 characters minimum) : Random generated id. Used by pay.greenleaze.com to associate all data to the transaction_id spectified in the redirection URL of the customer. Must be unique for each order. Please start the transactionId with the shop name to avoid collision. An error will be returned if the transactionId is not unique.
+    "duration": 12, // (Integer, Required) : Default duration of the rental in months.
+    "cartId": "", // (String, Required) : Cart id.
+    "cartSecureKey": "", // (String, Required) : Cart secure key.
+    "urls": {}, // (Object, Optional) : All shop's URL  See below for the URL format.
+    "source": "", // (String, Optional) : Source of the order, will be used to track the order on the GreenLeaze dashboard.
+    "totalInitialFees": 0.00, // (Float, null) : Initial fees of the order - If set with delivery name then delivery options will not be shown on the GreenLeaze payment page. If set without delivery name then delivery options will be shown on the GreenLeaze payment page and will override the totalInitialFees. If 0 considered as null.
+    "deliveryName": "", // (String, null) : Name of the delivery option selected by the customer.
+    "customer": {
+      "email": "", // (String, Optional)
+      "firstName": "", // (String, Optional)
+      "lastName": "", // (String, Optional)
+      "phone": "", // (String, Optional)
+    },
+    "deliveryAddress": {
+      "street": "", // (String, Optional)
+      "city": "", // (String, Optional)
+      "postCode": "", // (String, Optional)
+      "country": "", // (String, Optional)
+    },
+    "invoiceAddress": {
+      "street": "", // (String, Optional)
+      "city": "", // (String, Optional)
+      "postCode": "", // (String, Optional)
+      "country": "", // (String, Optional)
+    },
+    "askForAdresses": true, // (Boolean, Optional) : If false and presence of delivery or invoice addresses, the customer will not be asked for his delivery and invoice addresses and will not be able to edit them.
     "products": [
       // ...
     ], // (Array, Required) : List of products ordered by the customer - See below for the product format.
-    "cartId": "", // (String, Required) : Cart id.
-    "cartSecureKey": "", // (String, Required) : Cart secure key.
-    "totalInitialFees": 0.00 // (Float, Optional) : Initial fees : mainly delivery fees, will be overwritten by the delivery option price if any on the GreenLeaze dashboard.
+    "trackingId": "" // (String, Optional) : Tracking id of the customer for Google Analytics integration.
   }
 ]
 ```
@@ -91,8 +142,8 @@ POST /v1/subscriptions/
 ```json title="Product format"
 {
   "name": "", // (String, Required) : Name of the product.
-  "unitPrice": 0, // (Integer, Required) : Unit price of the product. Without taxes !
-  "vat": 0, // (Integer, Required) : VAT applicable on the product.
+  "unitPrice": 1000, // (Float, Required) : Unit price of the product. Without taxes !
+  "vat": 20, // (Float, Required) : VAT applicable on the product.
   "quantity": 1, // (Integer, Required) : Quantity ordered of the product.
   "combination": {
     "name": "" // (String, Optional) : Description of the combination. If single product without declination put the product name.
@@ -116,34 +167,75 @@ POST /v1/subscriptions/
 
 Responses of the request :
 
-201 : The order has been created and you are able to redirect him to the payment page. The transactionId is returned in the response with greenleaze subscriptionId which can be stored (or not) in your database.
+201 : The order has been created and you are able to redirect him to the payment page.
+
+```json title="Response object format"
+{
+  "success": true,
+  "transactionId": "tran2s_c623cbe0c3-12e4fb-436c-2aa4c-330a9ff00c32",
+  "subscriptionId": "76a7c5ef-a0cb-471a-81a4-ba47391885b0"
+}
+
+The field "transactionId" is returned in the response with greenleaze subscriptionId which can be stored (or not) in your database, it is the unique identifier of the order on GreenLeaze.
 
 401 : The provided API key is invalid.
 
-400 : The request is invalid. Check the format data sent.
+400 : The request is invalid. Check the format data sent - Details of the invalid fields are returned in the response.
 
-### Step 2 : Redirect the customer to pay.greenleaze.com
+### Step 3 : Redirect the customer to pay.greenleaze.com
 
 Once the order has been sent to GreenLeaze, you must redirect the customer to the GreenLeaze payment page, the previous request will return the URL to redirect the customer.
 You must redirect the customer to the URL returned by the previous request.
 
+The format of the URL is :
 ```
+
 https://pay.greenleaze.com/order/duration?transaction_id={transactionId}&duration={duration}&lang={language}
-```
+
+````
 
 Be sure to replace `{transactionId}` by the transactionId you have sent in the previous request.
-The `duration` parameter is the duration of the rental in months, it is optional but ables to preselect the duration on the GreenLeaze payment page.
-The `lang` parameter is the language of the payment page, it is optional but ables to preselect the language on the GreenLeaze payment page. Available options are `fr`, `en` and `de`.
+The `duration` parameter is the default duration of the subscription in months, it is optional but ables to preselect the duration on the GreenLeaze payment page.
+The `lang` parameter is the language of the payment page, it is optional but ables to preselect the language on the GreenLeaze payment page. Available options are `fr` (French), `en` (English) and `de` (German).
 
-### Step 3 : Listen for the customer payment
+### Step 4 : Listen for order modifications (optional)
+
+While the customer is entering new informations you can listen to the `sendData` URL you have provided in the request to edit the order on the fly.
+The `sendData` URL will be called with a PATCH request with the following parameters in the body :
+
+```json title="Request body"
+{
+  "email": "",
+  "phone": "",
+  "firstName": "",
+  "lastName": "",
+  "cartId": "",
+  "cartSecureKey": ""
+}
+```
+
+You may also listen for product deletions by using the `deleteProduct` URL you have provided in the request to create the order.
+This URL will be called with a PATCH request with the following parameters in the body :
+
+```json title="Request body"
+{
+  "id": "",
+  "cartId": "",
+  "cartSecureKey": ""
+}
+```
+
+This request may only be sent for products where the `id` field is set.
+
+### Step 5 : Listen for the customer payment
 
 Once the customer has completed the payment, he will be redirected to the (success) URL you have provided in the request to create the order.
 A post request will be sent to the (success) URL with the following parameters in the body :
 
-```json title="Urls object format"
+```json title="Response object format"
 {
-          "cartId": "",
-          "cartSecureKey": "",
+          "cartId": "", (same as the one used in the request to create the order)
+          "cartSecureKey": "", (same as the one used in the request to create the order)
           "email": "",
           "firstName": "",
           "lastName": "",
@@ -164,18 +256,28 @@ A post request will be sent to the (success) URL with the following parameters i
             "phone": "",
             "firstName": "",
             "lastName": "",
-          },
+          }, (optional)
+          "products": [
+            {
+              "name": "",
+              "quantity": 1,
+              "unitPrice": 1000,
+              "vat": 1,
+              "id": "" (if provided)
+            }
+          ],
           "greenleazeSubscriptionId": "",
-          "duration": 1,
-          "monthlyRentalPayment": 1,
+          "duration": 6,
+          "monthlyRentalPayment": 67,
           "deliveryMode": {
             "name": "",
             "price": 1,
             "tags": ""
-          }
+          } (optional)
 }
 ```
-deliveryAddress may be null depending on the configuration set on the GreenLeaze dashboard.
 
-Then the customer will be redirected on the same Url.
-````
+In case you created a draft order that was not editable by the customer on your website, you can trust the cartId and cartSecureKey to validate the order (example : Shopify backend).
+If there is a chance the cart has been modified by the customer, you can use the products array to validate the order (example : PrestaShop integration used cart secure key to validate the correct cart, but checks the cart content before validating the order).
+
+Then the customer will then be redirected on the same Url.

@@ -1,0 +1,64 @@
+---
+sidebar_position: 3
+sidebar_label: Implement with PrestaShop
+---
+
+# PrestaShop
+
+Greenleaze provides a module so you can easily integrate GreenLeaze into your PrestaShop store.
+The module can be installed on PrestaShop 1.7 and 1.8 with the following steps :
+
+- Install the module GreenLeaze on your PrestaShop store ;
+- Configure the module with your GreenLeaze account credentials ;
+- Unhook the buttons you do not want to use ;
+- Add Product Metafields ;
+- Customizing your store theme ;
+- Disable the module for specific products if needed ;
+- Listen for order creations to handle your own logic.
+
+## Install the module GreenLeaze on your PrestaShop store
+
+This step is done by GreenLeaze. Please contact us to get the module. Each module is linked to a specific configuration.
+
+## Configure the module with your GreenLeaze account credentials
+
+Configure the module with your GreenLeaze account API key and secret key as well as the URL of the api depending on your needs :
+
+- Development : https://staging.api.greenleaze.com
+- Production : https://new.api.greenleaze.com
+
+## Unhook the buttons you do not want to use
+
+You can unhook the buttons you do not want to use by unchecking the corresponding option in the module configuration (or in appearance > positions).
+The default buttons are :
+
+- On the product page ;
+- On the cart page ;
+- On the add to cart page ;
+- On the checkout page ;
+- On the product listing pages.
+
+## Add Product Metafields
+
+You need to add the following custom metafields to your store :
+
+- Go to your Shopify admin, click on Content then on MetaObjects ;
+- Click on "Add a definition" then "Personalized data" and "products" then "Add a definition" ;
+- Fill the form with the following values :
+  - "Disable GreenLeaze for this product" ;
+  - greenleaze.disabled ;
+  - "Disable GreenLeaze for this product" ;
+  - Type : True or False.
+
+## Customizing your store theme
+
+You can customize the styling of the GreenLeaze widget by editing the css file of your theme and using the appropriate selectors you can find by right clicking on the widget and selecting "Inspect" in your browser.
+
+## Disable the module for specific products if needed
+
+At installation Greenleaze Subscriptions is enabled for all products. You can disable it for specific products by setting the `greenleaze.disabled` metafield to `true` for the corresponding product. You can manage the metafields in the product edit page and then in "Option" tab.
+
+## Listen for order creations to handle your own logic
+
+Depending on your Prestashop integration you may want to implement a custom logic when an order is created. All orders are created on your shop with a status 'Greenleaze'. You can look for orders with this status and implement your own logic.
+If you prefer implementing your own system you can implement Greenleaze by API or modify the module webhooks endpoint.

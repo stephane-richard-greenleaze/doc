@@ -13,7 +13,10 @@ const FeatureList: FeatureItem[] = [
     title: "Install GreenLeaze",
     Svg: require("@site/static/img/one.svg").default,
     description: (
-      <>Our app is available on Shopify, Prestashop, WooCommerce or via API</>
+      <>
+        Our app is available on Shopify, Prestashop (soon), WooCommerce (soon)
+        or via API
+      </>
     ),
   },
   {
@@ -21,8 +24,8 @@ const FeatureList: FeatureItem[] = [
     Svg: require("@site/static/img/two.svg").default,
     description: (
       <>
-        On average, the products we rent depreciate by 25% in 6 months, 35% in
-        12 months and 50% in 24 months.
+        All the depreciations are fixed between your shop and GreenLeaze.
+        Contact us !
       </>
     ),
   },
