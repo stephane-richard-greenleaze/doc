@@ -1,5 +1,17 @@
-<script src="{{ 'greenleaze-script.js' | asset_url }}" async></script>
 
+<script>
+  if(!window.greenleazeScript){
+        window.greenleazeScript = true;
+        console.log("injecting script")
+        try {
+        var script = document.createElement('script');
+        script.src = "{{ 'greenleaze-script.js' | asset_url }}";    
+        document.head.appendChild(script);
+          } catch (e) {
+          console.error(e)
+          }
+      }
+</script>
 
 {% comment %}
 Used in : snippets/product-collection
@@ -21,7 +33,6 @@ Used in : snippets/product-collection
           }
       );
 
-      console.log("LOADED {{ product.title }}")
       function setGreenleazePrice{{ product.selected_or_first_available_variant.id }}() {
         if(!initPrice) return
          const prixHT = {{price}} / 100 * 5/6
@@ -31,19 +42,13 @@ Used in : snippets/product-collection
         console.log(container)
         if(container) {
           const tva = 120 / 100
-           const calculatePayment = parseRule(getRuleByProductPriceAndDuration(prixHT), {tva, prixHT});
-          const paiementMensuel = calculatePayment(); 
+          const calculatePayment = getRuleByProductPriceAndDuration(prixHT, monthValues[monthValues.length - 1])
+          const paiementMensuel = calculatePayment.monthly; 
           container.innerHTML = `${paiementMensuel} € / mois`
           }
         
      }
-  
-
-
       setGreenleazePrice{{ product.selected_or_first_available_variant.id }}()
-      
-    
-  
 </script>
 <style>
   .greenleaze-button-product {

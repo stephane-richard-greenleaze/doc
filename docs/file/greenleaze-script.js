@@ -1,5 +1,4 @@
 // Greenleaze variables
-
 let init = false;
 
 let initPrice = false;
@@ -8,7 +7,7 @@ var rawrules = {};
 var formated = {};
 var priceRules = [];
 let isCart = false;
-
+let tva = 1.2;
 const greenleazePriceActualize = new Event("greenleazePriceActualize");
 // Greenleaze functions
 function parseRule(rule, values) {
@@ -17,15 +16,33 @@ function parseRule(rule, values) {
   );
 }
 
-function getRuleByProductPriceAndDuration(productPrice, duration = 36) {
-  productPriceFormat = parseFloat(productPrice);
+function getAllPricesForProduct(productPriceHT) {
+  const result = {};
+  for (month in monthValues) {
+    result[monthValues[month]] = getRuleByProductPriceAndDuration(
+      productPriceHT,
+      monthValues[month]
+    );
+  }
+  return result;
+}
+
+function getRuleByProductPriceAndDuration(productPriceHT, duration = 36) {
+  if (!monthValues.includes(duration))
+    duration = monthValues[monthValues.length - 1];
+  productPriceFormat = parseFloat(productPriceHT);
   const rule = priceRules.find(
     (priceRule) =>
       priceRule.duration == duration &&
       priceRule.minPrice <= productPriceFormat &&
       priceRule.maxPrice >= productPriceFormat
   );
-  return rule ? rule.rule : "0.00";
+  return rule
+    ? {
+        monthly: parseRule(rule.rule, { tva, productPriceHT }),
+        initial: parseRule(rule.depositRule, { tva, productPriceHT }),
+      }
+    : { monthly: "0.00", initial: "0.00" };
 }
 
 async function setBackgroundSlider(slider) {
@@ -43,6 +60,14 @@ async function getAllPriceRules() {
   });
   rawrules = await rulesFetch.json();
   priceRules = rawrules;
+  const uniqueDurations = new Set();
+  for (let index = 0; index < priceRules.length; index++) {
+    uniqueDurations.add(priceRules[index].duration);
+  }
+  monthValues = [...uniqueDurations].sort(function (a, b) {
+    return a - b;
+  });
+  console.log("monthValues", monthValues);
   initPrice = true;
   console.log("GREENLEAZE INITIALIZED");
   window.dispatchEvent(greenleazePriceActualize);
@@ -65,4 +90,5 @@ async function initGreenleaze() {
   init = true;
   await getAllPriceRules();
 }
+
 if (!init) initGreenleaze();

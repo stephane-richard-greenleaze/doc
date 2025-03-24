@@ -9,30 +9,24 @@ Greenleaze provides a custom shopify app so you can easily integrate GreenLeaze 
 The integration is done in 3 steps :
 
 - Install the custom app GreenLeaze on your shopify store ;
-- Customize your store theme to display the greenleaze widget the way you want.
+- Customize your store theme to display the greenleaze button ;
+- Listen for events from Greenleaze to redirect the customer.
 
 ## Install the custom app GreenLeaze on your shopify store
 
-This step is done by GreenLeaze. Please contact us to install the custom app on your shopify store.
+This step is done by GreenLeaze. Please contact us to install the custom app on your shopify store. We will need your shopify store url (example.shopify.com). We will provide you with a link to install the app on all stores of the same organization.
 
-## Add Greenleaze assets files
+You will then have to configure the app with the following informations :
 
-On your Shopify store, you need to add the following svg files (content > files):
-
-- [logo-greenleaze-fond-blanc](../static/img/logo-greenleaze-fond-blanc.svg) ;
-- [logo-greenleaze-fond-vert](../static/img/logo-greenleaze-fond-vert.svg) ;
-- [logo-greenleaze-slider](../static/img/logo-greenleaze-slider.svg) ;
-- [progress-bar-greenleaze](../static/img/progress-bar-greenleaze.svg) ;
-- [greenleaze-illustration-bike](../static/img/greenleaze-illustration-bike.svg) ;
-- [greenleaze-illustration-casse-vol](../static/img/greenleaze-illustration-casse-vol.svg) ;
-- [greenleaze-illustration-franchise](../static/img/greenleaze-illustration-franchise.svg) ;
-- [greenleaze-illustration-replacement](../static/img/greenleaze-illustration-replacement.svg) ;
-
-Respect the name of the files or you will have to edit the code to match the new names.
+- The URL of your Greenleaze Environment (https://staging.api.greenleaze.com for development or https://new.api.greenleaze.com for production) ;
+- The Shopify API key and secret key ;
+- The Shopify API password ;
+- The secret key to use for the webhooks (optionnal) ;
+- If you want Greenleaze to check the stock of the products before creating a draft order ;
 
 ## Add Product Metafields
 
-You need to add the following custom metafields to your store :
+You need to add a custom metafields to your store to disable GreenLeaze for some products :
 
 - Go to your Shopify admin, click on Content then on MetaObjects ;
 - Click on "Add a definition" then "Personalized data" and "products" then "Add a definition" ;
@@ -46,69 +40,51 @@ You need to add the following custom metafields to your store :
 
 We recommand displaying the GreenLeaze widget on the product page and the cart page, the widget will allow your customers to choose the duration of the rental and see the monthly price.
 
-In all cases you need to add the greenleaze-script.js file to your store in assets/greenleaze-script.js and the modal template in snippets/greenleaze-abonnement-modal.liquid.
+In all cases you need to add the greenleaze-script.js file to your store in assets/greenleaze-script.js.
 
 [Download greenleaze-script.js](./file/greenleaze-script.js)
-[Download greenleaze-abonnement-modal.liquid](./file/greenleaze-abonnement-modal.liquid)
 
-You can edit the durations and the default duration in the greenleaze-script.js file and in the greenleaze-abonnement-modal.liquid file.
-
-In the script file you can edit `var monthValues = [1, 12, 24, 36];` to set all the durations compatible with your store.
-You may also need to edit the durations for the modal, the following code is an example for 1, 12, 18 and 24 and 36 months. You have to adapt the following lines to edit them :
-Don't forget the "max" value of the input range must be the length of the monthValues array minus one.
-
-```html
-<input
-  type="range"
-  id="monthSlider-greenleaze"
-  min="0"
-  max="3"
-  step="any"
-  value="0"
-/>
-<div class="slider-labels-greenleaze">
-  <span>1 mois</span>
-  <span>12 mois</span>
-  <span>24 mois</span>
-  <span>36 mois</span>
-</div>
-```
+Durations will be automatically fetched from the Shopify App.
+You may edit the `var monthValues = [1, 12, 24, 36];` to set default durations in case of loading error.
 
 ### Display the GreenLeaze widget on the product page
 
-1. Create a new snippet `greenleaze-abonnement-product.liquid`, it will hold a button GreenLeaze.
-   The following code must be customized to fit your store design.
+1. Create a new snippet `greenleaze-product.liquid`, it will hold a button GreenLeaze.
 
-[Download greenleaze-abonnement-product.liquid ](./file/greenleaze-abonnement-product.liquid)
+The following code must be customized to fit your store design. For simplicity, all style are in the file.
 
-You may need to edit the data-price attribute to correctly get the price of the product for your store.
+[Download greenleaze-product.liquid](./file/greenleaze-product.liquid)
 
-You must also edit the data-duration attribute to match the default duration you want to display when the modal is opened.
-
-```javascript
- data-price="{{product.price}}"
- data-duration="36"
-```
-
-Finally, you must edit the following line to match the lenght of the monthValues array minus one (here 3 because we have 4 durations) :
-
-```javascript
-data-value="3"
-```
-
-2.  Import the snippet in your product template `product.liquid` or file where you want to display the widget
+The button if display thanks to the following code :
 
 ```liquid
-{% render 'greenleaze-abonnement-product' %}
+<div class="greenleaze-button greenleaze-button-product button" data-price="{{product.price}}" data-variant-id={{ product.selected_or_first_available_variant.id }}>
+        Louer
+</div>
+```
+
+You may need to edit the data-price attribute to correctly get the price of the product for your store. To change the price after render you must edit the data-price attribute then rerender the widget by doing one of the following :
+
+- Call the event `greenleazePriceActualize` on window ;
+- Call the function `addModalAndButtonPrice` ;
+- Remove and re-add the button.
+
+You may also edit the script in the file to listen for custom events to call the addModalAndButtonPrice function with a customer price.
+
+2. Import the snippet in your product template `product.liquid` or file where you want to display the widget
+
+```liquid
+{% render 'greenleaze-product' %}
 ```
 
 ### Display the GreenLeaze widget on the cart page
 
-1. Create a new snippet `greenleaze-abonnement-cart.liquid`, it will hold a GreenLeaze button to display the prices of each product in the cart. The following code must be customized to fit your store design.
+1. Create a new snippet `greenleaze-cart.liquid`, it will hold a GreenLeaze button and modal to display the prices of each product in the cart. The following code must be customized to fit your store design.
 
-[Download greenleaze-abonnement-product.liquid ](./file/greenleaze-abonnement-cart.liquid)
+[Download greenleaze-cart.liquid ](./file/greenleaze-cart.liquid)
 
 You may need to edit the same values as for the product widget.
+By default the modal gets the price from Shopify cart. You may edit the script to get the price from a custom source.
 
 2. Import the snippet in your cart template `main-cart.liquid` or file where you want to display the widget
 
@@ -118,22 +94,33 @@ You may need to edit the same values as for the product widget.
 
 3. Call rerender when the cart is updated
 
-You can call the event `greenleazePriceActualize` on window when the cart is updated so the price is correctly displayed.
+You can call the event `greenleazePriceActualize` on window when the cart is updated so the price is correctly displayed or you can edit the script to listen for the change event and call the `addModalAndButtonPriceCart` function. You may add a delay to avoid calling the rerender before the cart is updated.
 
 ```javascript
-window.dispatchEvent(greenleazePriceActualize);
+window.addEventListener("change", function (event) {
+  setTimeout(() => addModalAndButtonPriceCart(), 1500);
+});
 ```
-
-You can also add a listener to one of your them event in greenleaze-abonnement-modal of greenleaze-script to refresh the data when you want.
 
 ### Display the GreenLeaze price on the collection page
 
-1. Create a new snippet `greenleaze-abonnement-product-preview.liquid`, it will hold the price of the product on the collection card.
+1. Create a new snippet `greenleaze-product-preview.liquid`, it will hold the price of the product on the collection card.
 
-[Download greenleaze-abonnement-product-preview.liquid](./file/greenleaze-abonnement-product-preview.liquid)
+[Download greenleaze-product-preview.liquid](./file/greenleaze-product-preview.liquid)
 
 2. Import the snippet in your theme product-card.liquid file or other template where you want to display the price, just before the product price.
 
 ```liquid
-{% render 'greenleaze-abonnement-product-preview' %}
+{% render 'greenleaze-product-preview' %}
 ```
+
+### Integrate with your existing tools
+
+#### Retreive the orders
+
+Greenleaze will automatically send the order created with the shopify to your shopify store. If you want the orders created on the Greenleaze dashboard you can use the following webhooks and configure them in the Greenleaze dashboard.
+
+- Product webhook : `https://shopify.api.greenleaze.com/webhooks/search-product?shop=example.myshopify.com` (to be able to select a shopify product in the Greenleaze dashboard)
+- Order confirmed webhook : `https://shopify.api.greenleaze.com/webhooks/validate-order?shop=example.myshopify.com` (only select Dashboard Greenleaze as source so you don't have duplicates)
+
+For both webhooks the secret key is the same as the value you enter on the Shopify App settings page. Use a complex key.
