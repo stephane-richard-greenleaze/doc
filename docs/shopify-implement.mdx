@@ -111,7 +111,7 @@ window.addEventListener("change", function (event) {
 2. Import the snippet in your theme product-card.liquid file or other template where you want to display the price, just before the product price.
 
 ```liquid
-{% render 'greenleaze-product-preview' %}
+{% render 'greenleaze-product-preview' with card_product as product %}
 ```
 
 ### Integrate with your existing tools

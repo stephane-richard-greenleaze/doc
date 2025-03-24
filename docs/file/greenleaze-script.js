@@ -37,18 +37,19 @@ function getRuleByProductPriceAndDuration(productPriceHT, duration = 36) {
       priceRule.minPrice <= productPriceFormat &&
       priceRule.maxPrice >= productPriceFormat
   );
+  const monthlyRule = parseRule(rule.rule, { tva, prixHT: productPriceHT });
+  const depositRule = parseRule(rule.depositRule, {
+    tva,
+    prixHT: productPriceHT,
+  });
   return rule
     ? {
-        monthly: parseRule(rule.rule, { tva, productPriceHT }),
-        initial: parseRule(rule.depositRule, { tva, productPriceHT }),
+        monthly: monthlyRule(),
+        initial: depositRule(),
       }
     : { monthly: "0.00", initial: "0.00" };
 }
 
-async function setBackgroundSlider(slider) {
-  const progress = (slider.value / slider.max) * 100;
-  slider.style.background = `linear-gradient(to right, #0c5537 ${progress}%, #d0e6e5 ${progress}%)`;
-}
 async function getAllPriceRules() {
   const rulesFetch = await fetch("/apps/greenleaze-proxy/pricing", {
     method: "GET",
@@ -67,22 +68,53 @@ async function getAllPriceRules() {
   monthValues = [...uniqueDurations].sort(function (a, b) {
     return a - b;
   });
-  console.log("monthValues", monthValues);
   initPrice = true;
   console.log("GREENLEAZE INITIALIZED");
   window.dispatchEvent(greenleazePriceActualize);
 }
 
-function setButtonLoading(selector, active) {
-  const button = document.querySelector(selector);
-  if (active) {
-    button.disabled = true;
-    // add spinner
-    button.classList.add("button--loading");
-  } else {
-    button.classList.remove("button--loading");
-    button.disabled = false;
+async function sendCartAndRedirect(duration, variantId) {
+  let cartContentsRes = await fetch(window.Shopify.routes.root + "cart.js");
+  let cartContents = await cartContentsRes.json();
+  if (variantId) {
+    const hasVariantId = cartContents.items.some(
+      (item) => item.variant_id == variantId
+    );
+
+    if (!hasVariantId) {
+      await addTo(variantId, 1);
+      console.log("");
+      cartContentsRes = await fetch(window.Shopify.routes.root + "cart.js");
+      console.log("");
+      cartContents = await cartContentsRes.json();
+    }
   }
+  let ack = await fetch("/apps/greenleaze-proxy/send-card", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Access-Control-Allow-Origin": "*",
+    },
+    body: JSON.stringify({
+      cartContents: JSON.stringify(cartContents),
+      duration: duration,
+      trackingId: null,
+      trackingData: null,
+    }),
+  });
+  if (ack.ok) {
+    ack = await ack.json();
+    if (ack?.message) {
+      console.error(ack?.message);
+    }
+    if (ack?.redirectUrl) {
+      window.location.href = ack?.redirectUrl + "&duration=" + duration;
+    }
+  } else {
+    console.error("Une erreur s'est produite.");
+    console.error("error during saved ", ack);
+  }
+  return true;
 }
 
 async function initGreenleaze() {
