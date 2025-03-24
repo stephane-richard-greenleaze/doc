@@ -30,9 +30,10 @@ if (event.data.type === "closeGreenleazeModal") {
     "none";
 }
 if (event.data.type === "submitGreenleazeModal") {
-  setTimeout(() => {
-    window.location.href = "https://google.com";
-  }, 1000);
+  sendCartAndRedirect().then(() => {
+    document.querySelector("#modal-abonnement-cart--greenleaze").style.display =
+      "none";
+  });
 }
 if (event.data.type === "openGreenleazeModal") {
   document.querySelector("#modal-abonnement-cart--greenleaze").style.display =

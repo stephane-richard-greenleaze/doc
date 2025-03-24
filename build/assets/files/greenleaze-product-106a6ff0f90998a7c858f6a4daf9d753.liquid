@@ -36,9 +36,10 @@ Add the script in head of the page if needed
           "none";
       }
       if (event.data.type === "submitGreenleazeModal") {
-        setTimeout(() => {
-          window.location.href = "https://google.com";
-        }, 1000);
+        sendCartAndRedirect().then(() => {
+          document.querySelector("#modal-abonnement-product--greenleaze").style.display =
+            "none";
+        });
       }
       if (event.data.type === "openGreenleazeModal") {
         document.querySelector("#modal-abonnement-product--greenleaze").style.display =
