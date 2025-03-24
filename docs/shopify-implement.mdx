@@ -124,3 +124,9 @@ Greenleaze will automatically send the order created with the shopify to your sh
 - Order confirmed webhook : `https://shopify.api.greenleaze.com/webhooks/validate-order?shop=example.myshopify.com` (only select Dashboard Greenleaze as source so you don't have duplicates)
 
 For both webhooks the secret key is the same as the value you enter on the Shopify App settings page. Use a complex key.
+
+#### Add analytics
+
+By default the shopify tracking Id is sent to Greenleaze. You can also add custom tracking data to the by adding a trackingData Object to the payload of the sendCartAndRedirect function in greenleaze-script.js.
+
+This payload will be sent in all requests to your sGTM configured in Greenleaze Dashboard.

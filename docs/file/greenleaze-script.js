@@ -98,7 +98,7 @@ async function sendCartAndRedirect(duration, variantId) {
     body: JSON.stringify({
       cartContents: JSON.stringify(cartContents),
       duration: duration,
-      trackingId: null,
+      trackingId: window.ShopifyAnalytics.lib.user().traits().uniqToken,
       trackingData: null,
     }),
   });
