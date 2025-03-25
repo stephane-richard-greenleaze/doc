@@ -30,7 +30,11 @@ if (event.data.type === "closeGreenleazeModal") {
     "none";
 }
 if (event.data.type === "submitGreenleazeModal") {
-  sendCartAndRedirect().then(() => {
+  sendCartAndRedirect(
+    event.data?.duration,
+    null,
+    event.data?.pdistinctId
+  ).then(() => {
     document.querySelector("#modal-abonnement-cart--greenleaze").style.display =
       "none";
   });

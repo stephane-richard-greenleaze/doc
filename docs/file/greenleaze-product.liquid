@@ -36,7 +36,12 @@ Add the script in head of the page if needed
           "none";
       }
       if (event.data.type === "submitGreenleazeModal") {
-        sendCartAndRedirect().then(() => {
+        const variantId = event.data?.variantId ?? null
+        sendCartAndRedirect(
+          event.data?.duration,
+          {{ product.selected_or_first_available_variant.id }} || null,
+          event.data?.pdistinctId
+        ).then(() => {
           document.querySelector("#modal-abonnement-product--greenleaze").style.display =
             "none";
         });

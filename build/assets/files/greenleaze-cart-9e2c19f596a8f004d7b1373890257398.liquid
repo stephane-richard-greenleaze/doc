@@ -128,7 +128,7 @@ console.log("pricesForcart", pricesForcart)
   const pricePerDurationEncoded = encodeURI(JSON.stringify(pricesForcart))
 console.log(pricePerDurationEncoded)
 const modalContent = `
-<iframe class="modal-abonnement-cart--greenleaze" src="/apps/greenleaze-proxy/modal-cart?durations=${pricePerDurationEncoded}">
+<iframe class="modal-abonnement-cart--greenleaze" src="/apps/greenleaze-proxy/modal-cart?durations=${pricePerDurationEncoded}&trackingId=${trackingId}">
   </iframe>
 `;
 const existingModal = document.querySelector("#modal-abonnement-cart--greenleaze")

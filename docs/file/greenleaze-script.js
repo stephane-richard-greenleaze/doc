@@ -78,7 +78,7 @@ async function getAllPriceRules() {
   window.dispatchEvent(greenleazePriceActualize);
 }
 
-async function sendCartAndRedirect(duration, variantId) {
+async function sendCartAndRedirect(duration, variantId, pdistinctId) {
   let cartContentsRes = await fetch(window.Shopify.routes.root + "cart.js");
   let cartContents = await cartContentsRes.json();
   if (variantId) {
@@ -105,6 +105,7 @@ async function sendCartAndRedirect(duration, variantId) {
       duration: duration,
       trackingId: trackingId,
       trackingData: null,
+      postHogtrackingId: pdistinctId,
     }),
   });
   if (ack.ok) {
