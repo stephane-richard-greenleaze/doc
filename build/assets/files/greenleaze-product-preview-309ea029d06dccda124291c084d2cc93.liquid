@@ -1,6 +1,5 @@
 
 <script>
-  console.log("that script", {{ product.id }}, {{product.price}})
   if(!window.greenleazeScript){
         window.greenleazeScript = true;
         console.log("injecting script from product preview")
@@ -26,33 +25,35 @@ Used in : snippets/product-collection
   
 {% endif %}
 
- <script type="text/javascript">
-   console.log("this script")
-       window.addEventListener(
-          "greenleazePriceActualize",
-          (e) => {
-              console.log("setGreenleazePriceForPreview")
-              setGreenleazePriceForPreview{{ product.id }}()
-          }
-      );
-
+<script type="text/javascript">
+ 
+if(typeof init !== "undefined" && init === true) { // In case the script already loaded
+console.log(typeof init)
+setGreenleazePriceForPreview{{ product.id }}()
+} else { // Else we wait it finishes 
+window.addEventListener("greenleazePriceActualize", function (event) {
+  setGreenleazePriceForPreview{{ product.id }}()
+})
+ 
+}
       function setGreenleazePriceForPreview{{ product.id }}() {
 
-        if(!window.greenleazeScript) return
-         const prixHT = {{product.price}} / 100 * 5/6
-          const id = {{ product.id }}
-         console.log("PRICE", prixHT, id)
-        const container = document.querySelector(`.previewPricePerMonth#id-${id}`);
-        console.log(container)
-        if(container) {
-          const tva = 120 / 100
-          const calculatePayment = getRuleByProductPriceAndDuration(prixHT, monthValues[monthValues.length - 1])
-          const paiementMensuel = calculatePayment.monthly; 
-          container.innerHTML = `${paiementMensuel} € / mois`
-          }
-        
-     }
-      setGreenleazePriceForPreview{{ product.id }}()
+  if(!window.greenleazeScript) return
+   const prixHT = {{product.price}} / 100 * 5/6
+    const id = {{ product.id }}
+   console.log("PRICE", prixHT, id)
+  const container = document.querySelector(`.previewPricePerMonth#id-${id}`);
+  console.log(container)
+  if(container) {
+    const tva = 120 / 100
+    const calculatePayment = getRuleByProductPriceAndDuration(prixHT, monthValues[monthValues.length - 1])
+    const paiementMensuel = calculatePayment.monthly; 
+    container.innerHTML = `À partir de ${paiementMensuel} € / mois`
+  }
+  
+}
+
+setGreenleazePriceForPreview{{ product.id }}()
 </script>
 <style>
   .greenleaze-button-product {

@@ -69,7 +69,7 @@ Add the script in head of the page if needed
         const pricePerDurationEncoded = encodeURI(JSON.stringify(pricesForProduct))
       console.log(priceRules)
       const modalContent = `
-      <iframe class="modal-abonnement-product--greenleaze" src="/apps/greenleaze-proxy/modal-product?durations=${pricePerDurationEncoded}">
+      <iframe class="modal-abonnement-product--greenleaze" src="/apps/greenleaze-proxy/modal-product?durations=${pricePerDurationEncoded}&trackingId=${trackingId}">
         </iframe>
       `;
       const existingModal = document.querySelector("#modal-abonnement-product--greenleaze")
@@ -112,9 +112,7 @@ Add the script in head of the page if needed
     background-color: #0c402b;
     border-color: #0c402b;
   }
-   .display-none {
-    display: none;
-  }
+
   .modal-abonnement-product--greenleaze {
     height: 100vh;
     width: 100vw;

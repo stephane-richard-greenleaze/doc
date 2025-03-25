@@ -6,35 +6,34 @@ sidebar_label: Implement with Shopify
 # Shopify
 
 Greenleaze provides a custom shopify app so you can easily integrate GreenLeaze into your shopify store.
-The integration is done in 3 steps :
+The integration is done in 3 steps:
 
-- Install the custom app GreenLeaze on your shopify store ;
-- Customize your store theme to display the greenleaze button ;
+- Install the custom app GreenLeaze on your shopify store;
+- Customize your store theme to display the greenleaze button;
 - Listen for events from Greenleaze to redirect the customer.
 
 ## Install the custom app GreenLeaze on your shopify store
 
 This step is done by GreenLeaze. Please contact us to install the custom app on your shopify store. We will need your shopify store url (example.shopify.com). We will provide you with a link to install the app on all stores of the same organization.
 
-You will then have to configure the app with the following informations :
+You will then have to configure the app with the following informations:
 
-- The URL of your Greenleaze Environment (https://staging.api.greenleaze.com for development or https://new.api.greenleaze.com for production) ;
-- The Shopify API key and secret key ;
-- The Shopify API password ;
-- The secret key to use for the webhooks (optionnal) ;
-- If you want Greenleaze to check the stock of the products before creating a draft order ;
+- The URL of your Greenleaze Environment (https://staging.api.greenleaze.com for development or https://new.api.greenleaze.com for production);
+- Your Greenleaze API key;
+- The secret key to use for the webhooks (optionnal);
+- If you want Greenleaze to check the stock of the products before creating a draft order;
 
 ## Add Product Metafields
 
-You need to add a custom metafields to your store to disable GreenLeaze for some products :
+You need to add a custom metafields to your store to disable GreenLeaze for some products:
 
-- Go to your Shopify admin, click on Content then on MetaObjects ;
-- Click on "Add a definition" then "Personalized data" and "products" then "Add a definition" ;
-- Fill the form with the following values :
-  - "Disable GreenLeaze for this product" ;
-  - greenleaze.disabled ;
-  - "Disable GreenLeaze for this product" ;
-  - Type : True or False.
+- Go to your Shopify admin, click on Content then on MetaObjects;
+- Click on "Add a definition" then "Personalized data" and "products" then "Add a definition";
+- Fill the form with the following values:
+  - "Disable GreenLeaze for this product";
+  - greenleaze.disabled;
+  - "Disable GreenLeaze for this product";
+  - Type: True or False.
 
 ## Customizing your store theme
 
@@ -55,7 +54,7 @@ The following code must be customized to fit your store design. For simplicity, 
 
 [Download greenleaze-product.liquid](./file/greenleaze-product.liquid)
 
-The button if display thanks to the following code :
+The button if display thanks to the following code:
 
 ```liquid
 <div class="greenleaze-button greenleaze-button-product button" data-price="{{product.price}}" data-variant-id={{ product.selected_or_first_available_variant.id }}>
@@ -63,10 +62,10 @@ The button if display thanks to the following code :
 </div>
 ```
 
-You may need to edit the data-price attribute to correctly get the price of the product for your store. To change the price after render you must edit the data-price attribute then rerender the widget by doing one of the following :
+You may need to edit the data-price attribute to correctly get the price of the product for your store. To change the price after render you must edit the data-price attribute then rerender the widget by doing one of the following:
 
-- Call the event `greenleazePriceActualize` on window ;
-- Call the function `addModalAndButtonPrice` ;
+- Call the event `greenleazePriceActualize` on window;
+- Call the function `addModalAndButtonPrice`;
 - Remove and re-add the button.
 
 You may also edit the script in the file to listen for custom events to call the addModalAndButtonPrice function with a customer price.
@@ -81,7 +80,7 @@ You may also edit the script in the file to listen for custom events to call the
 
 1. Create a new snippet `greenleaze-cart.liquid`, it will hold a GreenLeaze button and modal to display the prices of each product in the cart. The following code must be customized to fit your store design.
 
-[Download greenleaze-cart.liquid ](./file/greenleaze-cart.liquid)
+[Download greenleaze-cart.liquid](./file/greenleaze-cart.liquid)
 
 You may need to edit the same values as for the product widget.
 By default the modal gets the price from Shopify cart. You may edit the script to get the price from a custom source.
@@ -89,7 +88,7 @@ By default the modal gets the price from Shopify cart. You may edit the script t
 2. Import the snippet in your cart template `main-cart.liquid` or file where you want to display the widget
 
 ```liquid
-{% render 'greenleaze-abonnement-cart' %}
+{% render 'greenleaze-cart' %}
 ```
 
 3. Call rerender when the cart is updated
@@ -111,7 +110,7 @@ window.addEventListener("change", function (event) {
 2. Import the snippet in your theme product-card.liquid file or other template where you want to display the price, just before the product price.
 
 ```liquid
-{% render 'greenleaze-product-preview' with card_product as product %}
+{% render 'greenleaze-product-preview' with card_product as product %} <!-- card_product variable may be called differently in your theme/template -->
 ```
 
 ### Integrate with your existing tools
@@ -120,8 +119,8 @@ window.addEventListener("change", function (event) {
 
 Greenleaze will automatically send the order created with the shopify to your shopify store. If you want the orders created on the Greenleaze dashboard you can use the following webhooks and configure them in the Greenleaze dashboard.
 
-- Product webhook : `https://shopify.api.greenleaze.com/webhooks/search-product?shop=example.myshopify.com` (to be able to select a shopify product in the Greenleaze dashboard)
-- Order confirmed webhook : `https://shopify.api.greenleaze.com/webhooks/validate-order?shop=example.myshopify.com` (only select Dashboard Greenleaze as source so you don't have duplicates)
+- Product webhook: `https://shopify.api.greenleaze.com/webhooks/search-product?shop=example.myshopify.com` (to be able to select a shopify product in the Greenleaze dashboard)
+- Order confirmed webhook: `https://shopify.api.greenleaze.com/webhooks/validate-order?shop=example.myshopify.com` (only select Dashboard Greenleaze as source so you don't have duplicates)
 
 For both webhooks the secret key is the same as the value you enter on the Shopify App settings page. Use a complex key.
 

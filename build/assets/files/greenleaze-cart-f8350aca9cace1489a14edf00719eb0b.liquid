@@ -6,7 +6,7 @@ Add the script in head of the page if needed
 {% endcomment %}
 
 
-<div class="button greenleaze-button greenleaze-button-cart" data-price="{{cart.price}}" data-duration="36" data-value="3" data-variant-id={{ cart.selected_or_first_available_variant.id }}>
+<div class="button greenleaze-button greenleaze-button-cart">
   Louer
 </div>      
 <script>
@@ -76,7 +76,7 @@ const products = items.reduce(
 const metas = await (await getMetadatas(products)).json();
 
 
-const priceForCart = {} // Format : {[duration]: {[productName]: {monthly: 0, initial: 0}}}
+const priceForCart = {} // Format : {[duration]: {[productName]: {monthly: 0, initial: 0}}} // Price are ttc
 monthValues.forEach((duration) => {
   priceForCart[duration] = {}
 })
@@ -85,7 +85,7 @@ items.forEach((item) => {
     monthValues.forEach((duration) => {
       priceForCart[duration][item.title] = {
           monthly: 0,
-          initial: (item.final_price / 100)/1.2
+          initial: (item.final_price / 100)
       }
     })
   } else {
