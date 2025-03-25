@@ -127,5 +127,6 @@ For both webhooks the secret key is the same as the value you enter on the Shopi
 #### Add analytics
 
 By default the shopify tracking Id is sent to Greenleaze. You can also add custom tracking data to the by adding a trackingData Object to the payload of the sendCartAndRedirect function in greenleaze-script.js.
+You can edit the tracking Id sent to Greenleaze but you must pass one as it is used to identify the customer between your store and Greenleaze.
 
 This payload will be sent in all requests to your sGTM configured in Greenleaze Dashboard.

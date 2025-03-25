@@ -12,6 +12,7 @@ let tva = 1.2;
 const trackingId =
   window.ShopifyAnalytics?.lib?.user()?.traits()?.uniqToken ||
   self?.crypto?.randomUUID();
+
 const greenleazePriceActualize = new Event("greenleazePriceActualize");
 // Greenleaze functions
 function parseRule(rule, values) {
