@@ -85,7 +85,7 @@ We recommend to display the calculated price on :
 
 ## Send data to GreenLeaze
 
-### Step 2 : Send the order to GreenLeaze
+### Step 3 : Send the order to GreenLeaze
 
 Once your customer has made his order on your website, you must send the order to GreenLeaze to create the order.
 A simple POST request is used to send the order to GreenLeaze.
@@ -149,8 +149,9 @@ POST /v1/subscriptions/transaction
     "name": "" // (String, Optional) : Description of the combination. If single product without declination put the product name.
   },
   "imageUrl": "", // (String, Optional) : URL of the product image, must be a valid URL and accessible from the GreenLeaze server.
+  "deletableByCustomer": true, // (boolean, Optional) : If false the customer won't be able to delete the product from his cart on Greenleaze payment path even if id and delete url is set
   "disabled": false, // (Boolean, Required) : Indicates if the product is disabled for GreenLeaze Renting, if true the product will be payed in one time on GreenLeaze.
-  "id": "" // (String, Optional) : Id of the product, will be used to delete One unit of the product from the recap of the order.
+  "id": "" // (String, Optional) : Id of the product, will be used to delete One unit of the product and in the recap of the order. Enables a synchronization between your tool.
 }
 ```
 
@@ -159,7 +160,7 @@ POST /v1/subscriptions/transaction
   "failure": "", // (String, Required) : Url where the customer will be redirected in case of payment failure.
   "success": "", // (String, Required) : Url called with POST in case of success and where the user is redirected after
   "sendData": "", // (String, Optional) : Url called with PATCH (with the json data) to send the customer data before the end of the payment process.
-  "deleteProduct": "" // (String, optional) : Url call with PATCH (with the json data) to delete one unit of a the product with the id specified in the product format. You must specify the id of the product in the product format to use it.
+  "deleteProduct": "" // (String, optional) : Url call with PATCH (with the json data) to delete one unit of a the product with the id specified in the product format. You must specify the id of the product in the product format to use it. Won't be called with products where deletableByCustomer is false
 }
 ```
 

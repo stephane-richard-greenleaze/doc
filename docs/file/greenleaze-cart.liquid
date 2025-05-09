@@ -6,14 +6,13 @@ Add the script in head of the page if needed
 {% endcomment %}
 
 
-<div class="button greenleaze-button greenleaze-button-cart">
+<div class="btn btn--full btn--status button greenleaze-button greenleaze-button-cart">
   Louer
 </div>      
 <script>
 
 if(!window.greenleazeScript){
   window.greenleazeScript = true;
-  console.log("injecting script")
   try {
   var script = document.createElement('script');
   script.src = "{{ 'greenleaze-script.js' | asset_url }}";    
@@ -24,7 +23,6 @@ if(!window.greenleazeScript){
 }
 // Listen for events
 window.addEventListener("message", function (event) {
-console.log(event);
 if (event.data.type === "closeGreenleazeModal") {
   document.querySelector("#modal-abonnement-cart--greenleaze").style.display =
     "none";
@@ -47,11 +45,9 @@ if (event.data.type === "openGreenleazeModal") {
 // Get price array in format {[duration]: {month: 0, initial: 0}} stringify + url encoded
 
 if(typeof init !== "undefined" && init === true) { // In case the script already loaded
-console.log(typeof init)
 addModalAndButtonPriceCart()
 } else { // Else we wait it finishes 
 window.addEventListener("greenleazePriceActualize", function (event) {
-  console.log("Adding modal from event")
   addModalAndButtonPriceCart()
   
 })
@@ -67,7 +63,6 @@ async function getAllPricesForcart() {
 const cartContentsRes = await fetch(window.Shopify.routes.root + 'cart.js');
 
 const cartContents =( await cartContentsRes.json());
-console.log("cartContents", cartContents)
 const items = cartContents.items;
 if (items.length === 0) {
   console.error('No product in cart');
@@ -99,12 +94,11 @@ items.forEach((item) => {
     })
   }
 })
-console.log("priceForCart", priceForCart)
 return priceForCart
 
 }
 async function getMetadatas(productsReduced) {
-console.log(productsReduced)
+
 const metas = await fetch(
 '/apps/greenleaze-proxy/metadata?products=' + productsReduced,
 {
@@ -124,13 +118,13 @@ const minMonthlyPaiement = Object.values(minMonthItems).reduce(
   (acc, curr) => acc + +curr.monthly,
   0
 );
-  console.log("min", minMonthlyPaiement)
   document.querySelectorAll(".greenleaze-button-cart").forEach((button) => {
       button.innerText = `Louer à partir de ${minMonthlyPaiement} € / mois`
   })
-console.log("pricesForcart", pricesForcart)
-  const pricePerDurationEncoded = encodeURI(JSON.stringify(pricesForcart))
-console.log(pricePerDurationEncoded)
+  const pricePerDurationEncoded = encodeURIComponent(JSON.stringify(pricesForcart))
+  if(!trackingId) trackingId =
+        window.ShopifyAnalytics?.lib?.user?.()?.traits?.()?.uniqToken ||
+        self?.crypto?.randomUUID?.();
 const modalContent = `
 <iframe class="modal-abonnement-cart--greenleaze" src="/apps/greenleaze-proxy/modal-cart?durations=${pricePerDurationEncoded}&trackingId=${trackingId}">
   </iframe>
@@ -166,8 +160,10 @@ background-color: #0D5537;
 border-color: #0D5537;
 margin-bottom: 0px;
 width: 100%;
+cursor: pointer;
+
 }
-.greenleaze-button-cartt:hover {
+.greenleaze-button-cart:hover {
 background-color: #0c402b;
 border-color: #0c402b;
 }

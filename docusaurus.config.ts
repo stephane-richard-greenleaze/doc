@@ -3,6 +3,10 @@ import type { Config } from "@docusaurus/types";
 import type * as Preset from "@docusaurus/preset-classic";
 
 const config: Config = {
+  plugins: [
+    ["@gracefullight/docusaurus-plugin-intercom", { appId: "fdj21bz3" }],
+  ],
+
   title: "GreenLeaze documentation",
   // tagline: "Fast, reliable, and secure",
   favicon: "img/favicon.ico",

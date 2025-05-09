@@ -22,7 +22,7 @@ Add the script in head of the page if needed
     </script>
 
 
-    <div class="greenleaze-button greenleaze-button-product button" data-price="{{product.price}}" data-variant-id={{ product.selected_or_first_available_variant.id }}>
+    <div class="btn w-full btn--status greenleaze-button greenleaze-button-product button btn--primary" data-price="{{product.price}}" data-variant-id={{ product.selected_or_first_available_variant.id }}>
         Louer
     </div>   
     
@@ -71,8 +71,10 @@ Add the script in head of the page if needed
       document.querySelectorAll(".greenleaze-button-product").forEach((button) => {
           button.innerText = `Louer à partir de ${minPrice} € / mois`
       })
-        const pricePerDurationEncoded = encodeURI(JSON.stringify(pricesForProduct))
-      console.log(priceRules)
+        const pricePerDurationEncoded = encodeURIComponent(JSON.stringify(pricesForProduct))
+        if(!trackingId) trackingId =
+        window.ShopifyAnalytics?.lib?.user?.()?.traits?.()?.uniqToken ||
+        self?.crypto?.randomUUID?.();
       const modalContent = `
       <iframe class="modal-abonnement-product--greenleaze" src="/apps/greenleaze-proxy/modal-product?durations=${pricePerDurationEncoded}&trackingId=${trackingId}">
         </iframe>
@@ -112,6 +114,7 @@ Add the script in head of the page if needed
     border-color: #0D5537;
     margin-bottom: 0px;
     width: 100%;
+    cursor: pointer;
   }
   .greenleaze-button-product:hover {
     background-color: #0c402b;

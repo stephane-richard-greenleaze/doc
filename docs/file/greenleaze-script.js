@@ -8,10 +8,7 @@ var formated = {};
 var priceRules = [];
 let isCart = false;
 let tva = 1.2;
-
-const trackingId =
-  window.ShopifyAnalytics?.lib?.user()?.traits()?.uniqToken ||
-  self?.crypto?.randomUUID();
+let trackingId = null;
 
 const greenleazePriceActualize = new Event("greenleazePriceActualize");
 // Greenleaze functions
@@ -42,6 +39,11 @@ function getRuleByProductPriceAndDuration(productPriceHT, duration = 36) {
       priceRule.minPrice <= productPriceFormat &&
       priceRule.maxPrice >= productPriceFormat
   );
+  if (!rule) {
+    console.error("No price rule found", priceRules);
+    getAllPriceRules();
+    return null;
+  }
   const monthlyRule = parseRule(rule.rule, { tva, prixHT: productPriceHT });
   const depositRule = parseRule(rule.depositRule, {
     tva,
@@ -76,6 +78,50 @@ async function getAllPriceRules() {
   initPrice = true;
   console.log("GREENLEAZE INITIALIZED");
   window.dispatchEvent(greenleazePriceActualize);
+  // REFRESH EVENTS
+  document.addEventListener("on:cart:add", function (event) {
+    console.log("product added");
+    setTimeout(() => window.dispatchEvent(greenleazePriceActualize), 1500);
+  });
+  document.addEventListener("on:line-item:change", function (event) {
+    console.log("product changed");
+    setTimeout(() => window.dispatchEvent(greenleazePriceActualize), 1500);
+  });
+  document.addEventListener("dispatch:cart-drawer:refresh", function (event) {
+    console.log("dispatch:cart-drawer:refresh");
+    setTimeout(() => window.dispatchEvent(greenleazePriceActualize), 1500);
+  });
+  document.addEventListener("on:cart:error", function (event) {
+    console.log("on:cart:error");
+    setTimeout(() => window.dispatchEvent(greenleazePriceActualize), 1500);
+  });
+}
+
+async function addTo(variantId, quantity) {
+  var data = {
+    id: variantId, // Id of the variant
+    quantity: quantity, // Quantity
+  };
+
+  try {
+    let response = await fetch("/cart/add.js", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      throw new Error("Error during request: " + response.statusText);
+    }
+
+    // Wait for the response to be converted to JSON
+    let responseData = await response.json();
+  } catch (error) {
+    console.error("Erreur:", error);
+  }
 }
 
 async function sendCartAndRedirect(duration, variantId, pdistinctId) {
@@ -85,15 +131,20 @@ async function sendCartAndRedirect(duration, variantId, pdistinctId) {
     const hasVariantId = cartContents.items.some(
       (item) => item.variant_id == variantId
     );
-
     if (!hasVariantId) {
       await addTo(variantId, 1);
       console.log("");
       cartContentsRes = await fetch(window.Shopify.routes.root + "cart.js");
       console.log("");
+      // Wait a few seconds so automatic products are added to the cart
+      // await new Promise((resolve) => setTimeout(resolve, 1000));
       cartContents = await cartContentsRes.json();
     }
   }
+  if (!trackingId)
+    trackingId =
+      window.ShopifyAnalytics?.lib?.user?.()?.traits?.()?.uniqToken ||
+      self?.crypto?.randomUUID?.();
   let ack = await fetch("/apps/greenleaze-proxy/send-card", {
     method: "POST",
     headers: {

@@ -2,7 +2,6 @@
 <script>
   if(!window.greenleazeScript){
         window.greenleazeScript = true;
-        console.log("injecting script from product preview")
         try {
         var script = document.createElement('script');
         script.src = "{{ 'greenleaze-script.js' | asset_url }}";    
@@ -41,9 +40,7 @@ window.addEventListener("greenleazePriceActualize", function (event) {
   if(!window.greenleazeScript) return
    const prixHT = {{product.price}} / 100 * 5/6
     const id = {{ product.id }}
-   console.log("PRICE", prixHT, id)
   const container = document.querySelector(`.previewPricePerMonth#id-${id}`);
-  console.log(container)
   if(container) {
     const tva = 120 / 100
     const calculatePayment = getRuleByProductPriceAndDuration(prixHT, monthValues[monthValues.length - 1])

@@ -18,22 +18,11 @@ This step is done by GreenLeaze. Please contact us to install the custom app on 
 
 You will then have to configure the app with the following informations:
 
-- The URL of your Greenleaze Environment (https://staging.api.greenleaze.com for development or https://new.api.greenleaze.com for production);
+- The URL of your Greenleaze Environment (https://staging.api.greenleaze.com/v1 for development or https://new.api.greenleaze.com/v1 for production);
 - Your Greenleaze API key;
 - The secret key to use for the webhooks (optionnal);
 - If you want Greenleaze to check the stock of the products before creating a draft order;
 
-## Add Product Metafields
-
-You need to add a custom metafields to your store to disable GreenLeaze for some products:
-
-- Go to your Shopify admin, click on Content then on MetaObjects;
-- Click on "Add a definition" then "Personalized data" and "products" then "Add a definition";
-- Fill the form with the following values:
-  - "Disable GreenLeaze for this product";
-  - greenleaze.disabled;
-  - "Disable GreenLeaze for this product";
-  - Type: True or False.
 
 ## Customizing your store theme
 
@@ -130,3 +119,13 @@ By default the shopify tracking Id is sent to Greenleaze. You can also add custo
 You can edit the tracking Id sent to Greenleaze but you must pass one as it is used to identify the customer between your store and Greenleaze.
 
 This payload will be sent in all requests to your sGTM configured in Greenleaze Dashboard.
+
+
+#### Disable products
+
+You are able to disable a product from Greenleaze so your customer are not able to rent it. To do so set the product metafield
+"Désactiver Greenleaze" to "true"
+
+#### Make a product not deletable
+
+When arriving on Greenleaze Payment interface the user is able to delete products from the order. If you need a particular product not to be deletable you may set the metafield "Produit non suppresible" to "true" on your product admin page.
