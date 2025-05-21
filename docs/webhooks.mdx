@@ -1,0 +1,240 @@
+---
+sidebar_position: 4
+sidebar_label: Webhooks
+---
+
+# Webhooks
+
+## Basic informations
+
+You may use webhooks to listen for events from Greenleaze and implement your own logic.
+
+GreenLeaze has 3 types of webhooks:
+
+- Transaction specific webhooks;
+
+They are defined in the payload when creating a transaction and are signed with the api key used to create the transaction.
+If you use the GreenLeaze module for Prestashop or Shopify, the module will automatically configure theses webhooks for each transaction, for API integration you need to indicate the webhook url in the payload.
+
+- Event webhooks;
+
+They are configured in the GreenLeaze dashboard, you may have multiple webhooks for the same event.
+You may choose if they trigger for all orders, only for orders created by the dashboard or only for orders created by the API. It enables you to create different logics for each type of orders.
+
+- Configuration webhooks.
+
+They are used to retrieve specific elements from your CMS, like products or discount-codes. Their goal is to avoid data dupication and permit the user to use GreenLeaze with existing data of your shop.
+
+They are defined in the payload when creating a transaction and are signed with the secret key used to create the transaction.
+
+Theses are the only webhooks that are listening for a response which must be formatted in a specific way.
+
+## Payloads details
+
+Here are the payloads for each type of webhooks.
+
+### Transaction specific webhooks
+
+#### Send data
+
+Send at each input from the customer on relevant fields. Fields may be undefined if the customer didn't input data.
+
+PATCH request
+
+```json
+{
+  "email": "customer-email",
+  "phone": "+331122334455",
+  "firstName": "customer-first-name",
+  "lastName": "customer-last-name",
+  "cartId": "shop-cart-id",
+  "cartSecureKey": "secure-key"
+}
+```
+
+#### Success
+
+POST request
+
+```json
+{
+  "cartId": "shop-cart-id",
+  "cartSecureKey": "secure-key",
+  "source": "prestashop, Shopify, etc.",
+  "id": "greenleaze-order-id",
+  "email": "customer-email",
+  "firstName": "customer-first-name",
+  "lastName": "customer-last-name",
+  "deliveryAddress": {
+    "id": "greenleaze-address-id",
+    "country": "FR",
+    "city": "Paris",
+    "postCode": "75000",
+    "street": "1 rue de la paix",
+    "phone": "+331122334455"
+  } // Only if required by the selected delivery method
+  "invoiceAddress": {
+    "id": "greenleaze-address-id",
+    "country": "FR",
+    "city": "Paris",
+    "postCode": "75000",
+    "street": "1 rue de la paix",
+    "phone": "+331122334455"
+  }, // Only if required by the selected delivery method
+  "duration": 12,
+  "monthlyRentalPayment": 65.43,
+  "deliveryMode": {
+    "pickup", // Can be overwritten at transaction creation or on delivery method configuration on the dashboard
+    "price": 23,
+    "delay": 7, // Always 7, feature not implemented yet
+    "tags": "tag1, tag2, tag3" // Defined on the delivery method configuration on the dashboard
+  },
+  "products": [
+    {
+      "greenleazeId": "greenleaze-line-id",
+      "id": "shop-product-id",
+      "combinationId": "shop-product-combination-id",
+      "name": "shop-product-name",
+      "price": 12.5,
+      "vat": 20,
+      "priceWithDiscount": 10.5, // In case of usage of a discount-code
+      "quantity": 1,
+    }
+  ]
+}
+```
+
+If the customer is able to edit his cart, please do compare the product list with the cart for additional security. Even more if you enable clients to edit the cart.
+
+#### Failure
+
+POST request
+
+```json
+{
+  "cartId": "shop-cart-id",
+  "cartSecureKey": "secure-key",
+  "greenleazeSubscriptionId": "greenleaze-subscription-id",
+  "reason": "Commande refusée"
+}
+```
+
+You are unabled to get details on the refusal reason. No refusal is definitively set by Greenleaze, you may still ask your customer to try again by connecting another bank account.
+
+#### Delete product
+
+PATCH request
+
+```json
+{
+  "cartId": "shop-cart-id",
+  "cartSecureKey": "secure-key",
+  "id": "shop-product-id",
+  "combinationId": "shop-product-combination-id"
+}
+```
+
+To avoid delay, GreenLeaze assume all deletion are sucessful. Cart content must be doubled checked on transaction success.
+
+### Event webhooks
+
+Theses webhooks are configured in the GreenLeaze dashboard, you may have multiple webhooks for the same event.
+
+#### Order created
+
+Same as the Success payload in the Transaction specific webhooks.
+If you need to retrieve additionnal data, please contact us.
+
+#### Order abandoned
+
+```json
+{
+  "lastPaymentMethodEnteredAt": "2025-01-01T00:00:00.000Z",
+  "lastDunningSentAtSubscription": "2025-01-01T00:00:00.000Z",
+  "lastDunningSentAtCustomer": "2025-01-01T00:00:00.000Z",
+  "email": "customer-email",
+  "phone": "+331122334455",
+  "firstName": "customer-first-name",
+  "lastName": "customer-last-name",
+  "subscriptionLines": [
+    {
+      "name": "shop-product-name",
+      "duration": 12,
+      "combination": "shop-product-combination-name",
+      "price": 12.5,
+      "deletable": true,
+      "rental": "location",
+      "image": "shop-product-image"
+    }
+  ],
+  "source": "prestashop, Shopify, etc.",
+  "transactionId": "greenleaze-transaction-id" // Can be used to recreate the transaction link
+}
+```
+
+If you need to retrieve additionnal data, please contact us.
+
+#### Order confirmed
+
+Same as the Success payload in the Transaction specific webhooks.
+If you need to retrieve additionnal data, please contact us.
+
+### Configuration webhooks
+
+#### Product
+
+Request POST, signed with X-Webhook-Signature and the webhook secret key.
+
+```json
+{
+  "query": "search-query"
+}
+```
+
+Waiting for a response with the following format:
+
+```json
+[
+  {
+    "id": "shop-product-id",
+    "combinationId": "shop-product-combination-id",
+    "title": "friendly-product-name",
+    "combination": "friendly-product-combination-name",
+    "priceTTC": 12.5,
+    "quantity": 132, // Remaining quantity in your stock - may be negative or always 1, it is for information only
+    "vat": 20, // Vat rate of specific product - Not used for now, default vat rate of the shop is used. If you plan to use multiple vat rate, please contact us.
+    "disabled": false, // true if product is not available for renting, may be overide by the vendor at order creation
+    "reference": "XX-XXXX" // Optional, reference or small text just used to identify the product on Greenleaze dashboard easly, won't be shown to the customer
+  }
+]
+```
+
+#### Discount-code
+
+Used to validate discount codes entered by the customer.
+
+Request POST, signed with X-Webhook-Signature and the webhook secret key.
+
+```json
+{
+  "discountCode": "discount-code"
+}
+```
+
+Waiting for a response with the following format:
+
+```json
+{
+  "type": "product_percentage | fixed_amount",
+  "value": 10,
+  "id": "discount-code-id"
+}
+```
+
+If a code is returned, the equivalent discount code will be created on Greenleaze dashboard (unique usage) and applied to the transaction.
+
+# Specific configuration
+
+By default all webhooks are sending the customer data on every fields. But you may want to retrieve Greenleaze informations as billing informations to simplify your process.
+You may do this by checking "Use Greenleaze informations" in the webhook configuration page on the dashboard.
+If checked, the webhooks "Order confirmed" and "Success" will be sent with Greenleaze data as email and invoice address. Non-reply email "orders-noreply@greenleaze.com" will be used as email. This email must not be used for sending your invoices as it won't be read by Greenleaze.

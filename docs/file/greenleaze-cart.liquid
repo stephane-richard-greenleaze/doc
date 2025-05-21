@@ -32,9 +32,11 @@ if (event.data.type === "submitGreenleazeModal") {
     event.data?.duration,
     null,
     event.data?.pdistinctId
-  ).then(() => {
-    document.querySelector("#modal-abonnement-cart--greenleaze").style.display =
-      "none";
+  ).then((success) => {
+    if(success){
+      document.querySelector("#modal-abonnement-cart--greenleaze").style.display =
+        "none";
+    } else
   });
 }
 if (event.data.type === "openGreenleazeModal") {

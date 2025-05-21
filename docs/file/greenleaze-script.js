@@ -1,3 +1,5 @@
+window.greenleazeScript = true;
+
 // Greenleaze variables
 let init = false;
 
