@@ -114,6 +114,15 @@ For both webhooks the secret key is the same as the value you enter on the Shopi
 
 For details on the webhooks content see [Webhooks](/docs/webhooks)
 
+#### Use Shopify discount codes
+
+GreenLeaze Shopify's module enable the use of a discount code webhook.
+Only codes of type DiscountPercentage and DiscountAmount available for all customers. All complexity is ignored.
+
+- Discount code webhook is available at `https://shopify.api.greenleaze.com/webhooks/validate-discount-code?shop=example.myshopify.com`
+
+The webhook secret key is the same as the value you enter on the Shopify App settings page.
+
 #### Add analytics
 
 By default the shopify tracking Id is sent to Greenleaze. You can also add custom tracking data to the by adding a trackingData Object to the payload of the sendCartAndRedirect function in greenleaze-script.js.

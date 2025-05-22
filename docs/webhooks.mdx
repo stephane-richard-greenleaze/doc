@@ -191,6 +191,8 @@ Request POST, signed with X-Webhook-Signature and the webhook secret key.
 }
 ```
 
+The query is also added to the `search` query parameter.
+
 Waiting for a response with the following format:
 
 ```json
@@ -200,6 +202,7 @@ Waiting for a response with the following format:
     "combinationId": "shop-product-combination-id",
     "title": "friendly-product-name",
     "combination": "friendly-product-combination-name",
+    "image": "https://pubblic-link-to-image.com/image.jpg",
     "priceTTC": 12.5,
     "quantity": 132, // Remaining quantity in your stock - may be negative or always 1, it is for information only
     "vat": 20, // Vat rate of specific product - Not used for now, default vat rate of the shop is used. If you plan to use multiple vat rate, please contact us.

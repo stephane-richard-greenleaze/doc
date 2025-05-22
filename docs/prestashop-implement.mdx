@@ -33,19 +33,29 @@ The default buttons are :
 
 - On the product page ;
 - On the cart page ;
-- On the add to cart page ;
-- On the checkout page ;
-- On the product listing pages.
+- On the checkout page.
 
 ## Customizing your store theme
 
-You can customize the styling of the GreenLeaze widget by editing the css file of your theme and using the appropriate selectors you can find by right clicking on the widget and selecting "Inspect" in your browser.
+You can customize the styling of the GreenLeaze widget by editing the css file of your theme and using the appropriate selectors you can find by right clicking on the widget and selecting "Inspect" in your browser. Avoid editing the module files directly as they will be overwritten by the next module update.
 
 ## Disable the module for specific products if needed
 
 At installation Greenleaze Subscriptions is enabled for all products. You can disable it for specific products by checking the "Disable GreenLeaze for this product" option in the product admin page options tab.
+In module configuration you can also disable Greenleaze for specific categories.
 
 ## Listen for order creations to handle your own logic
 
 Depending on your Prestashop integration you may want to implement a custom logic when an order is created. By default All orders are created on your shop with a status 'Greenleaze'. You can look for orders with this status and implement your own logic.
 If you prefer implementing your own system you can implement Greenleaze by API or modify the module webhooks endpoint.
+
+## Search product webhook
+
+The greenleaze module provides a webhook to search for products from the Greenleaze Dashboard (see [webhooks](/docs/webhooks) for more informations).
+The webhook link is :
+
+```
+https://your-shop.com/module/greenleaze/webhook?route=search-product&search
+```
+
+The webhook secret is your Greenleaze API key. The shop needs to be publicly accessible to receive the webhook.
