@@ -22,11 +22,8 @@ function parseRule(rule, values) {
 
 function getAllPricesForProduct(productPriceHT) {
   const result = {};
-  for (month in monthValues) {
-    result[monthValues[month]] = getRuleByProductPriceAndDuration(
-      productPriceHT,
-      monthValues[month]
-    );
+  for (const month of monthValues) {
+    result[month] = getRuleByProductPriceAndDuration(productPriceHT, month);
   }
   return result;
 }
