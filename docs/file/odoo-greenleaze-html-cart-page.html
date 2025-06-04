@@ -1,0 +1,294 @@
+<div id="greenleaze_price_selector"></div>
+<div class="btn btn-primary w-100" id="greenleaze_create_order">
+  Continuer <i class="fa fa-angle-right ms-2 fw-light"></i>
+</div>
+
+<script>
+  let greenleaze_monthValues = null;
+  let priceRules = null;
+  let tva = 1.2;
+  let formatedProductPrice = null;
+  // COMMON FUNCTIONS
+  function parseRule(rule, values) {
+    return new Function(
+      "return " + rule.replace(/\[\[(\w+)\]\]/g, (_, key) => values[key])
+    );
+  }
+
+  async function getAllPriceRules() {
+    const rulesFetch = await fetch(
+      "https://odoo.api.greenleaze.com/odoo/pricing?shop=green-on2-greenleaze.odoo.com",
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "x-public-key":
+            "greenleaze_public_KKOZQKijdqokdqklJIOJIOZDLKQZkopkzodqKIOJDIOZQJD",
+        },
+      }
+    );
+    rawrules = await rulesFetch.json();
+    priceRules = rawrules;
+    const uniqueDurations = new Set();
+    for (let index = 0; index < priceRules.length; index++) {
+      uniqueDurations.add(priceRules[index].duration);
+    }
+    greenleaze_monthValues = [...uniqueDurations].sort(function (a, b) {
+      return a - b;
+    });
+
+    return { months: greenleaze_monthValues, rules: priceRules };
+  }
+
+  async function getAllPricesForProduct(productPriceHT) {
+    console.log("getAllPricesForProduct");
+    const result = {};
+    if (!greenleaze_monthValues) {
+      const { months, rules } = await getAllPriceRules();
+      greenleaze_monthValues = months;
+      priceRules = rules;
+    }
+    for (const month of greenleaze_monthValues) {
+      result[month] = await getRuleByProductPriceAndDuration(
+        productPriceHT,
+        month
+      );
+    }
+    return result;
+  }
+
+  async function getRuleByProductPriceAndDuration(
+    productPriceHT,
+    duration = 48
+  ) {
+    console.log("getRuleByProductPriceAndDuration");
+    if (!greenleaze_monthValues.includes(duration))
+      duration = greenleaze_monthValues[greenleaze_monthValues.length - 1];
+    productPriceFormat = parseFloat(productPriceHT);
+    if (!priceRules) {
+      priceRules = await getAllPriceRules();
+    }
+    const rule = priceRules.find(
+      (priceRule) =>
+        priceRule.duration == duration &&
+        priceRule.minPrice <= productPriceFormat &&
+        priceRule.maxPrice >= productPriceFormat
+    );
+    if (!rule) {
+      console.error("No price rule found", priceRules);
+      return null;
+    }
+    const monthlyRule = parseRule(rule.rule, { tva, prixHT: productPriceHT });
+    const depositRule = parseRule(rule.depositRule, {
+      tva,
+      prixHT: productPriceHT,
+    });
+    return rule
+      ? {
+          monthly: monthlyRule(),
+          initial: depositRule(),
+        }
+      : { monthly: "0.00", initial: "0.00" };
+  }
+
+  var priceForCart = {};
+
+  async function fetchOdooForPrices(products) {
+    const results = await Promise.allSettled(
+      products.map(async (product) => {
+        if (
+          priceForCart[product.params.product_id]?.[
+            product.params.combination.join(",")
+          ]
+        ) {
+          return priceForCart[product.params.product_id][
+            product.params.combination.join(",")
+          ];
+        }
+
+        const response = await fetch(
+          `https://green-on2-greenleaze.odoo.com/website_sale/get_combination_info`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(product),
+          }
+        );
+        const data = await response.json();
+        if (!priceForCart[product.params.product_id]) {
+          priceForCart[product.params.product_id] = {};
+        }
+        priceForCart[product.params.product_id][
+          product.params.combination.join(",")
+        ] = data;
+        return data;
+      })
+    );
+    return (
+      await Promise.allSettled(results.map((result) => result.value))
+    ).map((result) => ({
+      price: result.value?.result?.price,
+      productName: result.value?.result?.display_name,
+      productId: result.value?.result?.product_template_id,
+      combinationId: result.value?.result?.product_id,
+    }));
+  }
+  async function getCartContents() {
+    const cartItems = document.querySelectorAll(".o_cart_product");
+    const results = [];
+
+    cartItems.forEach((item) => {
+      const productId = parseInt(item.getAttribute("data-product-id"), 10);
+
+      const link = item.querySelector('a[href*="/shop/"]');
+      if (!link) return;
+
+      const href = link.getAttribute("href") || "";
+      const url = new URL(href, window.location.origin);
+
+      // Extract product_template_id from slug
+      const slugMatch = url.pathname.match(/-(\d+)$/);
+      const productTemplateId = slugMatch ? parseInt(slugMatch[1], 10) : null;
+
+      // Extract combination from #attr
+      const attrFragment = url.hash.replace("#attr=", "");
+      const combination = attrFragment
+        .split(",")
+        .filter(Boolean)
+        .map((id) => parseInt(id, 10));
+
+      if (productId && productTemplateId) {
+        results.push({
+          id: 3, // Static or dynamic depending on your API logic
+          jsonrpc: "2.0",
+          method: "call",
+          params: {
+            product_template_id: productTemplateId,
+            product_id: productId,
+            combination: combination,
+            add_qty: null,
+            parent_combination: [],
+          },
+        });
+      }
+    });
+
+    // We now fetch the prices for each product
+    const prices = await fetchOdooForPrices(results);
+    console.log("prices", prices);
+    return prices;
+  }
+  function injectLeaseSelector(data, targetSelector = "body") {}
+
+  function removeCTA() {
+    console.log("removeCTA");
+    const ctaWrapper = document.querySelector("#o_wsale_total_accordion");
+    const ctaWrapper2 = document.querySelectorAll(
+      "[name='website_sale_cart_line_price']"
+    );
+    if (ctaWrapper) {
+      // ctaWrapper.remove();
+      ctaWrapper.style.display = "none";
+      ctaWrapper.style.height = "0px";
+      ctaWrapper.style.overflow = "hidden";
+      ctaWrapper.style.padding = "0px";
+      ctaWrapper.style.margin = "0px";
+      ctaWrapper.style.border = "none";
+      ctaWrapper.style.borderRadius = "0px";
+      ctaWrapper.style.position = "absolute";
+      ctaWrapper.className = "";
+      console.log("Removed .o_wsale_cta_wrapper");
+    }
+    if (ctaWrapper2) {
+      ctaWrapper2.forEach((item) => {
+        // Get parent of item
+        // Remove child
+        console.log("item", item);
+        for (let i = 0; i < item.children.length; i++) {
+          console.log("child", item.children[i]);
+          if (item.children[i]) item.children[i].remove();
+          if (item.children[0]) item.children[0].remove();
+        }
+        // Add child with class oe_cart_line_price
+        const newChild = document.createElement("div");
+        newChild.innerHTML = "€ par mois";
+        newChild.className = "oe_cart_line_price_greenleaze";
+        // Check no
+        item.appendChild(newChild);
+      });
+    }
+    // Change class of oe_cart to oe_cart_greenleaze
+    const oeCart = document.querySelector(".oe_cart");
+    if (oeCart) {
+      oeCart.className = "oe_cart col-12";
+    }
+  }
+  function injectProductPrice(formatedProductPrice, selectedDuration) {
+    if (!selectedDuration) {
+      selectedDuration =
+        greenleaze_monthValues[greenleaze_monthValues.length - 1];
+    }
+    const cartItems = document.querySelectorAll(".o_cart_product");
+    cartItems.forEach((item) => {
+      // get data-product-id
+      const productId = parseInt(item.getAttribute("data-product-id"), 10);
+      // Find the product in formatedProductPrice
+      console.log("formatedProductPrice", productId, formatedProductPrice);
+      const product = formatedProductPrice.find(
+        (product) =>
+          product.productId === productId || product.combinationId === productId
+      );
+      // Inject the price
+      const price = product.greenleazePrices[selectedDuration];
+      item.querySelector(
+        ".oe_cart_line_price_greenleaze"
+      ).textContent = `${price.monthly} € par mois`;
+    });
+  }
+
+  document.addEventListener("DOMContentLoaded", async () => {
+    async function initGreenleaze() {
+      console.log("initGreenleaze");
+      try {
+        const cartContents = await getCartContents();
+        // For each product we call getAllPricesForProduct
+        const prices = (
+          await Promise.allSettled(
+            cartContents.map(async (product) => {
+              return {
+                ...product,
+                greenleazePrices: await getAllPricesForProduct(product.price),
+              };
+            })
+          )
+        ).map((result) => result.value);
+        console.log("prices", prices);
+        formatedProductPrice = prices;
+        injectProductPrice(formatedProductPrice);
+        console.log("cartContents", cartContents);
+      } catch (error) {
+        console.error("Error in initGreenleaze", error);
+      }
+      const productCartContainer = document.querySelector("div#cart_products");
+      if (productCartContainer) {
+        const cartContentsObserver = new MutationObserver((e) => {
+          if (e[0].addedNodes.length > 0) {
+            removeCTA();
+            initGreenleaze();
+            console.log("MutationObserver", e);
+          }
+        });
+        console.log("productCartContainer", productCartContainer);
+        cartContentsObserver.observe(productCartContainer, {
+          childList: true,
+          subtree: true,
+        });
+      }
+    }
+    console.log("DOMContentLoaded");
+    removeCTA();
+    initGreenleaze();
+  });
+</script>

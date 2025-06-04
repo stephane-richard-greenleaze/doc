@@ -1,0 +1,234 @@
+<div id="greenleaze_price_selector"></div>
+
+<script>
+  let greenleaze_monthValues = null;
+  let priceRules = null;
+  let tva = 1.2;
+  let formatedProductPrice = null;
+  // COMMON FUNCTIONS
+  function parseRule(rule, values) {
+    return new Function(
+      "return " + rule.replace(/\[\[(\w+)\]\]/g, (_, key) => values[key])
+    );
+  }
+
+  async function getAllPriceRules() {
+    const rulesFetch = await fetch(
+      "https://odoo.api.greenleaze.com/odoo/pricing?shop=green-on2-greenleaze.odoo.com",
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "x-public-key":
+            "greenleaze_public_KKOZQKijdqokdqklJIOJIOZDLKQZkopkzodqKIOJDIOZQJD",
+        },
+      }
+    );
+    rawrules = await rulesFetch.json();
+    priceRules = rawrules;
+    const uniqueDurations = new Set();
+    for (let index = 0; index < priceRules.length; index++) {
+      uniqueDurations.add(priceRules[index].duration);
+    }
+    greenleaze_monthValues = [...uniqueDurations].sort(function (a, b) {
+      return a - b;
+    });
+
+    return { months: greenleaze_monthValues, rules: priceRules };
+  }
+
+  async function getAllPricesForProduct(productPriceHT) {
+    console.log("getAllPricesForProduct");
+    const result = {};
+    if (!greenleaze_monthValues) {
+      const { months, rules } = await getAllPriceRules();
+      greenleaze_monthValues = months;
+      priceRules = rules;
+    }
+    for (const month of greenleaze_monthValues) {
+      result[month] = await getRuleByProductPriceAndDuration(
+        productPriceHT,
+        month
+      );
+    }
+    return result;
+  }
+
+  async function getRuleByProductPriceAndDuration(
+    productPriceHT,
+    duration = 48
+  ) {
+    console.log("getRuleByProductPriceAndDuration");
+    if (!greenleaze_monthValues.includes(duration))
+      duration = greenleaze_monthValues[greenleaze_monthValues.length - 1];
+    productPriceFormat = parseFloat(productPriceHT);
+    if (!priceRules) {
+      priceRules = await getAllPriceRules();
+    }
+    const rule = priceRules.find(
+      (priceRule) =>
+        priceRule.duration == duration &&
+        priceRule.minPrice <= productPriceFormat &&
+        priceRule.maxPrice >= productPriceFormat
+    );
+    if (!rule) {
+      console.error("No price rule found", priceRules);
+      return null;
+    }
+    const monthlyRule = parseRule(rule.rule, { tva, prixHT: productPriceHT });
+    const depositRule = parseRule(rule.depositRule, {
+      tva,
+      prixHT: productPriceHT,
+    });
+    return rule
+      ? {
+          monthly: monthlyRule(),
+          initial: depositRule(),
+        }
+      : { monthly: "0.00", initial: "0.00" };
+  }
+
+  function getProductPrice() {
+    console.log("getProductPrice");
+    const priceElement = document.querySelector(".oe_price"); // Fallbacks
+    if (!priceElement) return;
+    const price = priceElement.textContent.trim();
+    let unitPriceTTC = null;
+    if (price) {
+      unitPriceTTC = +price.replace(",", ".").replace(/[^0-9.]/g, "");
+    }
+    return unitPriceTTC;
+  }
+  var greennleazeSelectedDurationIndex = null;
+
+  function injectLeaseSelector(data, targetSelector = "body") {
+    // Create container
+    const container = document.createElement("div");
+    container.className = "greenleaze_price_selector_container";
+
+    // Price display
+    const priceDisplay = document.createElement("div");
+    priceDisplay.style.fontSize = "20px";
+    priceDisplay.style.fontWeight = "bold";
+    priceDisplay.style.marginBottom = "10px";
+    priceDisplay.style.textAlign = "left";
+    priceDisplay.innerHTML =
+      '0 € <small style="font-weight: normal">par mois</small>';
+    container.appendChild(priceDisplay);
+    // Title
+    const label = document.createElement("div");
+    label.textContent = "Durée de location en mois";
+    label.style.fontWeight = "bold";
+    label.style.marginBottom = "8px";
+    label.style.textAlign = "left";
+    container.appendChild(label);
+
+    // Button group
+    const btnGroup = document.createElement("div");
+    btnGroup.style.display = "flex";
+    btnGroup.style.gap = "10px";
+    container.appendChild(btnGroup);
+
+    // Track current selection
+    let activeBtn = null;
+
+    if (!greennleazeSelectedDurationIndex) greennleazeSelectedDurationIndex = 0;
+    // Create buttons for each duration
+    Object.entries(data).forEach(([duration, { monthly }], index) => {
+      const btn = document.createElement("button");
+      btn.textContent = duration;
+      btn.style.padding = "8px 14px";
+      btn.style.border = "1px solid #ccc";
+      btn.style.borderRadius = "6px";
+      btn.style.cursor = "pointer";
+      btn.style.background =
+        index === greennleazeSelectedDurationIndex ? "#000" : "#eee";
+      btn.style.color =
+        index === greennleazeSelectedDurationIndex ? "#fff" : "#000";
+
+      if (index === greennleazeSelectedDurationIndex) {
+        activeBtn = btn;
+        priceDisplay.innerHTML = `${monthly} € <small style="font-weight: normal">par mois</small>`;
+      }
+
+      btn.addEventListener("click", () => {
+        if (activeBtn) {
+          activeBtn.style.background = "#eee";
+          activeBtn.style.color = "#000";
+          greennleazeSelectedDurationIndex = index;
+        }
+        btn.style.background = "#000";
+        btn.style.color = "#fff";
+        activeBtn = btn;
+        priceDisplay.innerHTML = `${monthly} € <small style="font-weight: normal">par mois</small>`;
+      });
+
+      btnGroup.appendChild(btn);
+    });
+
+    // Inject into target container
+    const target = document.querySelector(targetSelector);
+    if (target) {
+      // Check if the container is already in the target, if yes replace it
+      const existingContainer = target.querySelector(
+        ".greenleaze_price_selector_container"
+      );
+      if (existingContainer) {
+        existingContainer.remove();
+      }
+      target.appendChild(container);
+    } else {
+      console.warn("Target container not found:", targetSelector);
+    }
+  }
+
+  function removeCTA() {
+    console.log("removeCTA");
+    const ctaWrapper = document.querySelector("#o_wsale_cta_wrapper");
+    const ctaWrapper2 = document.querySelector(".product_price");
+    // if (ctaWrapper) {
+    //   ctaWrapper.style.display = "none";
+    //   ctaWrapper.className = "";
+    //   console.log("Removed .o_wsale_cta_wrapper");
+    // }
+    if (ctaWrapper2) {
+      ctaWrapper2.style.display = "none";
+      ctaWrapper2.className = "";
+      console.log("Removed .js_product.js_main_product");
+    }
+  }
+  function injectProductPrice(formatedProductPrice) {
+    console.log("injectProductPrice");
+    console.log("formatedProductPrice", formatedProductPrice);
+    injectLeaseSelector(formatedProductPrice, "#greenleaze_price_selector");
+  }
+
+  document.addEventListener("DOMContentLoaded", async () => {
+    let lastPrice = null;
+    async function initGreenleaze() {
+      console.log("initGreenleaze");
+      try {
+        const price = getProductPrice();
+        if (lastPrice != price) {
+          lastPrice = price;
+          const prices = await getAllPricesForProduct(price);
+          formatedProductPrice = prices;
+          injectProductPrice(prices);
+        }
+      } catch (error) {
+        console.error("Error in initGreenleaze", error);
+      }
+    }
+    console.log("DOMContentLoaded");
+    removeCTA();
+    initGreenleaze();
+    const priceElement = document.querySelector(".oe_price");
+    const getProductPriceObserver = new MutationObserver(() => {
+      initGreenleaze();
+    });
+    getProductPriceObserver.observe(priceElement, {
+      childList: true,
+      subtree: true,
+    });
+  });
+</script>

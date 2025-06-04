@@ -160,8 +160,9 @@ POST /v1/subscriptions/transaction
   "failure": "", // (String, Required) : Url where the customer will be redirected in case of payment failure.
   "success": "", // (String, Required) : Url called with POST in case of success and where the user is redirected after
   "sendData": "", // (String, Optional) : Url called with PATCH (with the json data) to send the customer data before the end of the payment process.
-  "deleteProduct": "" // (String, optional) : Url call with PATCH (with the json data) to delete one unit of a the product with the id specified in the product format. You must specify the id of the product in the product format to use it. Won't be called with products where deletableByCustomer is false
-}
+  "deleteProduct": "", // (String, optional) : Url call with PATCH (with the json data) to delete one unit of a the product with the id specified in the product format. You must specify the id of the product in the product format to use it. Won't be called with products where deletableByCustomer is false
+  "return": "" // (String, optional) : Url where the user is redirected when clicking on "Go back" or "Return to shop" - Enter the url without "https://" prefix
+  }
 ```
 
 </details>
