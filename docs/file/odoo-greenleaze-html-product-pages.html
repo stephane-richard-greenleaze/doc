@@ -204,7 +204,15 @@
   }
 
   document.addEventListener("DOMContentLoaded", async () => {
+    // Only do this if not disabled
     let lastPrice = null;
+    const span = document.querySelector("#greenleaze_disabled");
+    if (!span) return;
+    const isDisabled = span.getAttribute("data-greenleaze-disabled");
+    if (isDisabled === "true") {
+      console.log("Greenleaze is disabled");
+      return;
+    }
     async function initGreenleaze() {
       console.log("initGreenleaze");
       try {
@@ -220,6 +228,7 @@
       }
     }
     console.log("DOMContentLoaded");
+
     removeCTA();
     initGreenleaze();
     const priceElement = document.querySelector(".oe_price");

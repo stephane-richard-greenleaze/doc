@@ -15,6 +15,8 @@
     );
   }
 
+  async function getMonthValues() {}
+
   async function getAllPriceRules() {
     const rulesFetch = await fetch(
       "https://odoo.api.greenleaze.com/odoo/pricing?shop=green-on2-greenleaze.odoo.com",
@@ -62,12 +64,15 @@
     duration = 48
   ) {
     console.log("getRuleByProductPriceAndDuration");
+    if (!priceRules) {
+      const { months, rules } = await getAllPriceRules();
+      priceRules = rules;
+      greenleaze_monthValues = months;
+    }
     if (!greenleaze_monthValues.includes(duration))
       duration = greenleaze_monthValues[greenleaze_monthValues.length - 1];
     productPriceFormat = parseFloat(productPriceHT);
-    if (!priceRules) {
-      priceRules = await getAllPriceRules();
-    }
+
     const rule = priceRules.find(
       (priceRule) =>
         priceRule.duration == duration &&
@@ -215,6 +220,7 @@
         const newChild = document.createElement("div");
         newChild.innerHTML = "€ par mois";
         newChild.className = "oe_cart_line_price_greenleaze";
+
         // Check no
         item.appendChild(newChild);
       });
@@ -248,6 +254,35 @@
     });
   }
 
+  function createOrderAndRedirect() {
+    console.log("createOrder");
+    const cartItems = Array.from(
+      document.querySelectorAll(".o_cart_product")
+    ).map((item) => parseInt(item.getAttribute("data-product-id"), 10));
+    console.log("cartItems", cartItems);
+
+    fetch(
+      "https://odoo.api.greenleaze.com/odoo/create-transaction?shop=green-on2-greenleaze.odoo.com",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-public-key":
+            "greenleaze_public_KKOZQKijdqokdqklJIOJIOZDLKQZkopkzodqKIOJDIOZQJD",
+        },
+        body: JSON.stringify({
+          productsIds: cartItems,
+        }),
+      }
+    ).then(async (response) => {
+      console.log("response", response);
+      if (response.ok) {
+        window.location.href = (await response.json()).redirectUrl;
+      }
+    });
+    // Redirect to /shop/cart
+  }
+
   document.addEventListener("DOMContentLoaded", async () => {
     async function initGreenleaze() {
       console.log("initGreenleaze");
@@ -271,24 +306,36 @@
       } catch (error) {
         console.error("Error in initGreenleaze", error);
       }
-      const productCartContainer = document.querySelector("div#cart_products");
-      if (productCartContainer) {
-        const cartContentsObserver = new MutationObserver((e) => {
-          if (e[0].addedNodes.length > 0) {
-            removeCTA();
-            initGreenleaze();
-            console.log("MutationObserver", e);
-          }
-        });
-        console.log("productCartContainer", productCartContainer);
-        cartContentsObserver.observe(productCartContainer, {
-          childList: true,
-          subtree: true,
-        });
-      }
     }
     console.log("DOMContentLoaded");
-    removeCTA();
+    // removeCTA();
     initGreenleaze();
+    const productCartContainer = document.querySelector("div#cart_products");
+    const cartContentsObserver = new MutationObserver((e) => {
+      console.log("MutationObserver", e);
+
+      if (e[0].addedNodes.length === 1 && e[0].removedNodes.length === 0) {
+        // removeCTA();
+        initGreenleaze();
+      }
+    });
+    if (productCartContainer) {
+      console.log("productCartContainer", productCartContainer);
+      cartContentsObserver.observe(productCartContainer, {
+        childList: true,
+        subtree: true,
+        characterData: true,
+      });
+    }
+
+    // Add event listener to greenleaze_create_order
+    const greenleazeCreateOrder = document.querySelector(
+      "#greenleaze_create_order"
+    );
+    if (greenleazeCreateOrder) {
+      greenleazeCreateOrder.addEventListener("click", () => {
+        createOrderAndRedirect();
+      });
+    }
   });
 </script>
