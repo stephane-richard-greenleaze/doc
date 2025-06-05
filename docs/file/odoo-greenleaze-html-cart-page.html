@@ -190,9 +190,7 @@
   function removeCTA() {
     console.log("removeCTA");
     const ctaWrapper = document.querySelector("#o_wsale_total_accordion");
-    const ctaWrapper2 = document.querySelectorAll(
-      "[name='website_sale_cart_line_price']"
-    );
+
     if (ctaWrapper) {
       // ctaWrapper.remove();
       ctaWrapper.style.display = "none";
@@ -205,25 +203,6 @@
       ctaWrapper.style.position = "absolute";
       ctaWrapper.className = "";
       console.log("Removed .o_wsale_cta_wrapper");
-    }
-    if (ctaWrapper2) {
-      ctaWrapper2.forEach((item) => {
-        // Get parent of item
-        // Remove child
-        console.log("item", item);
-        for (let i = 0; i < item.children.length; i++) {
-          console.log("child", item.children[i]);
-          if (item.children[i]) item.children[i].remove();
-          if (item.children[0]) item.children[0].remove();
-        }
-        // Add child with class oe_cart_line_price
-        const newChild = document.createElement("div");
-        newChild.innerHTML = "€ par mois";
-        newChild.className = "oe_cart_line_price_greenleaze";
-
-        // Check no
-        item.appendChild(newChild);
-      });
     }
     // Change class of oe_cart to oe_cart_greenleaze
     const oeCart = document.querySelector(".oe_cart");
